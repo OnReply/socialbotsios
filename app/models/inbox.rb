@@ -8,7 +8,7 @@
 #  allow_messages_after_resolved :boolean          default(TRUE)
 #  auto_assignment_config        :jsonb
 #  channel_type                  :string
-#  csat_survey_enabled           :boolean          default(FALSE)
+#  csat_survey_enabled           :boolean          default(TRUE)
 #  email_address                 :string
 #  enable_auto_assignment        :boolean          default(TRUE)
 #  enable_email_collect          :boolean          default(TRUE)

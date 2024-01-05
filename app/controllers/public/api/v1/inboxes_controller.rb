@@ -2,6 +2,8 @@ class Public::Api::V1::InboxesController < PublicController
   before_action :set_inbox_channel
   before_action :set_contact_inbox
   before_action :set_conversation
+  skip_before_action :verify_authenticity_token
+
 
   def show
     @inbox_channel = ::Channel::Api.find_by!(identifier: params[:id])

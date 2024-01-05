@@ -47,6 +47,12 @@ class AutomationRules::ActionService < ActionService
     Messages::MessageBuilder.new(nil, @conversation, params).perform
   end
 
+  def close_conversation(params)
+    payload = @conversation.webhook_data.merge(event: "automation_event.#{@rule.event_name}")
+    return if Rails.env.development? || Rails.env.test?
+    WebhookJob.perform_later("https://webhooks.socialbot.dev/webhook/close_conversation", payload)
+  end
+
   def send_email_to_team(params)
     teams = Team.where(id: params[0][:team_ids])
 

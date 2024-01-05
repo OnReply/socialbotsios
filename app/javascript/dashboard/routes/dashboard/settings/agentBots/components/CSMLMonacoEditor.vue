@@ -5,16 +5,13 @@
       :message="$t('AGENT_BOTS.LOADING_EDITOR')"
       class="dashboard-app_loading-container"
     />
-    <iframe
-      id="csml-editor--frame"
-      :src="globalConfig.csmlEditorHost"
-      @load="onEditorLoad"
-    />
+    <iframe id="csml-editor--frame" :src="iframeURL()" @load="onEditorLoad" />
   </div>
 </template>
 <script>
 import LoadingState from 'dashboard/components/widgets/LoadingState';
 import { mapGetters } from 'vuex';
+import md5 from 'md5';
 
 export default {
   components: { LoadingState },
@@ -32,6 +29,7 @@ export default {
   computed: {
     ...mapGetters({
       globalConfig: 'globalConfig/get',
+      currentAccountId: 'getCurrentAccountId',
     }),
   },
   mounted() {
@@ -55,6 +53,15 @@ export default {
       };
       frameElement.contentWindow.postMessage(JSON.stringify(eventData), '*');
       this.iframeLoading = false;
+    },
+    iframeURL() {
+      return (
+        this.globalConfig.csmlEditorHost +
+        '?dbidentification=' +
+        md5(
+          this.currentAccountId.toString() + window.chatwootConfig.randomString
+        )
+      );
     },
   },
 };

@@ -12,8 +12,9 @@
 %>
 <script>
 
-window.chatwootSettings = {
+window.socialBotSettings = {
   hideMessageBubble: false,
+  // baseDomain: '.loca.lt',
   position: '<%= @widget_position %>',
   locale: 'en',
   useBrowserLanguage: true,
@@ -31,7 +32,7 @@ window.chatwootSettings = {
   g.async = true;
   s.parentNode.insertBefore(g,s);
   g.onload=function(){
-    window.chatwootSDK.run({
+    window.socialBotSDK.run({
       websiteToken: '<%= @web_widget.website_token %>',
       baseUrl: BASE_URL
     })

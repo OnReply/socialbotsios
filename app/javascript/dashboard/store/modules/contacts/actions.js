@@ -140,6 +140,20 @@ export const actions = {
     }
   },
 
+  export: async ({ commit }, filter_label) => {
+    try {
+      await ContactAPI.exportContacts(filter_label);
+      commit(types.SET_CONTACT_UI_FLAG, { isCreating: false });
+    } catch (error) {
+      commit(types.SET_CONTACT_UI_FLAG, { isCreating: false });
+      if (error.response?.data?.message) {
+        throw new Error(error.response.data.message);
+      } else {
+        throw new Error(error);
+      }
+    }
+  },
+
   delete: async ({ commit }, id) => {
     commit(types.SET_CONTACT_UI_FLAG, { isDeleting: true });
     try {

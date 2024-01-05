@@ -1,4 +1,6 @@
 class Facebook::SendOnFacebookService < Base::SendOnChannelService
+  include Facebook::InteractiveMessages
+
   private
 
   def channel_class
@@ -6,6 +8,8 @@ class Facebook::SendOnFacebookService < Base::SendOnChannelService
   end
 
   def perform_reply
+    return send_interactive_messages if message.content_type == 'input_select'
+
     send_message_to_facebook fb_text_message_params if message.content.present?
     send_message_to_facebook fb_attachment_message_params if message.attachments.present?
   rescue Facebook::Messenger::FacebookError => e

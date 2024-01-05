@@ -160,9 +160,15 @@ class User < ApplicationRecord
     }
   end
 
+  def super_admin?
+    type == 'SuperAdmin'
+  end
+
   private
 
   def remove_macros
     macros.personal.destroy_all
   end
 end
+
+User.include_mod_with('Audit::User')

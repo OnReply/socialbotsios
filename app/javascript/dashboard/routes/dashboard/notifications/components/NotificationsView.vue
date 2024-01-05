@@ -55,9 +55,17 @@ export default {
         primaryActorType,
         unreadCount: this.meta.unreadCount,
       });
-
       this.$router.push(
         `/app/accounts/${this.accountId}/conversations/${conversationId}`
+      );
+    },
+    portalLink(notification) {
+      const slug = notification.primary_actor.title;
+      return buildPortalArticleURL(
+        slug,
+        notification.primary_actor.category_slug,
+        notification.primary_actor.locale,
+        notification.primary_actor.id
       );
     },
     onMarkAllDoneClick() {

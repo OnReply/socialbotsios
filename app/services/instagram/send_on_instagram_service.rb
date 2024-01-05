@@ -1,5 +1,6 @@
 class Instagram::SendOnInstagramService < Base::SendOnChannelService
   include HTTParty
+  include Instagram::SendOnInstagramService::InteractiveMessages
 
   pattr_initialize [:message!]
 
@@ -14,6 +15,8 @@ class Instagram::SendOnInstagramService < Base::SendOnChannelService
   end
 
   def perform_reply
+    return send_to_facebook_page message_buttons_params if message.content_type == 'input_select'
+
     send_to_facebook_page attachament_message_params if message.attachments.present?
     send_to_facebook_page message_params
   rescue StandardError => e
@@ -56,14 +59,16 @@ class Instagram::SendOnInstagramService < Base::SendOnChannelService
     access_token = channel.page_access_token
     app_secret_proof = calculate_app_secret_proof(GlobalConfigService.load('FB_APP_SECRET', ''), access_token)
     query = { access_token: access_token }
+    headers = { 'Content-Type' => 'application/json' }
     query[:appsecret_proof] = app_secret_proof if app_secret_proof
 
     # url = "https://graph.facebook.com/v11.0/me/messages?access_token=#{access_token}"
 
     response = HTTParty.post(
       'https://graph.facebook.com/v11.0/me/messages',
-      body: message_content,
-      query: query
+      body: message_content.to_json,
+      query: query,
+      headers: headers
     )
 
     Rails.logger.error("Instagram response: #{response['error']} : #{message_content}") if response['error']

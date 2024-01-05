@@ -73,6 +73,33 @@
             v-model="action_params"
             :initial-file-name="initialFileName"
           />
+          <div v-else-if="inputType === 'template_picker'">
+            <woot-button
+              variant="clear"
+              class="w-full"
+              @click="showTemplateModal = true"
+            >
+              Select Template
+            </woot-button>
+
+            <woot-modal
+              :show="showTemplateModal"
+              :on-close="closeTemlateModal"
+            >
+              <templates-picker
+                v-if="!selectedTemplate"
+                classes="template__list-container"
+                @onSelect="showParser"
+              />
+              <template-parser
+                v-else
+                :template="selectedTemplate"
+                :button-text="'automation'"
+                @resetTemplate="onResetTemplate"
+                @sendMessage="onSendMessage"
+              />
+            </woot-modal>
+          </div>
         </div>
       </div>
       <woot-button
@@ -109,11 +136,22 @@
 import AutomationActionTeamMessageInput from './AutomationActionTeamMessageInput.vue';
 import AutomationActionFileInput from './AutomationFileInput.vue';
 import WootMessageEditor from 'dashboard/components/widgets/WootWriter/Editor';
+import TemplatesPicker from './conversation/WhatsappTemplates/TemplatesPicker.vue';
+import TemplateParser from './conversation/WhatsappTemplates/TemplateParser.vue';
 export default {
   components: {
     AutomationActionTeamMessageInput,
     AutomationActionFileInput,
     WootMessageEditor,
+    TemplatesPicker,
+    TemplateParser,
+  },
+  data() {
+    return {
+      showTemplateModal: false,
+      selectedTemplate: false,
+      imageFile: null,
+    }
   },
   props: {
     value: {
@@ -195,6 +233,30 @@ export default {
     resetAction() {
       this.$emit('resetAction');
     },
+    showParser(template) {
+      this.selectedTemplate = template;
+    },
+    onSendMessage(template) {
+      this.showTemplateModal = false;
+      const {image, ...params} = template;
+      this.action_params = JSON.stringify(params);
+      this.$emit('changeImage', image)
+      // this.action_params = JSON.stringify(template)
+    },
+    onResetTemplate(){
+      this.selectedTemplate = false;
+    },
+    closeTemlateModal() {
+      this.showTemplateModal = false;
+    }
+  },
+  watch: {
+    action_name(newValue) {
+      if(newValue == 'send_whatsapp_template') {
+        this.$emit('addWhatsappDefaultCondition');
+      }
+    }
+
   },
 };
 </script>

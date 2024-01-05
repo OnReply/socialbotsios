@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
+ActiveRecord::Schema[7.0].define(version: 2023_09_11_103233) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_stat_statements"
   enable_extension "pg_trgm"
@@ -132,6 +132,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
     t.jsonb "meta", default: {}
     t.string "slug", null: false
     t.integer "position"
+    t.string "video_url", default: ""
     t.index ["associated_article_id"], name: "index_articles_on_associated_article_id"
     t.index ["author_id"], name: "index_articles_on_author_id"
     t.index ["slug"], name: "index_articles_on_slug", unique: true
@@ -405,6 +406,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
     t.jsonb "custom_attributes", default: {}
     t.datetime "last_activity_at", precision: nil
     t.index "lower((email)::text), account_id", name: "index_contacts_on_lower_email_account_id"
+    t.index ["account_id", "email", "phone_number", "identifier"], name: "index_contacts_on_nonempty_fields", where: "(((email)::text <> ''::text) OR ((phone_number)::text <> ''::text) OR ((identifier)::text <> ''::text))"
     t.index ["account_id"], name: "index_contacts_on_account_id"
     t.index ["email", "account_id"], name: "uniq_email_per_account_contact", unique: true
     t.index ["identifier", "account_id"], name: "uniq_identifier_per_account_contact", unique: true
@@ -575,7 +577,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
     t.string "out_of_office_message"
     t.string "timezone", default: "UTC"
     t.boolean "enable_email_collect", default: true
-    t.boolean "csat_survey_enabled", default: false
+    t.boolean "csat_survey_enabled", default: true
     t.boolean "allow_messages_after_resolved", default: true
     t.jsonb "auto_assignment_config", default: {}
     t.boolean "lock_to_single_conversation", default: false, null: false
@@ -662,6 +664,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
     t.bigint "sender_id"
     t.jsonb "external_source_ids", default: {}
     t.jsonb "additional_attributes", default: {}
+    t.text "processed_message_content"
     t.index "((additional_attributes -> 'campaign_id'::text))", name: "index_messages_on_additional_attributes_campaign_id", using: :gin
     t.index ["account_id", "inbox_id"], name: "index_messages_on_account_id_and_inbox_id"
     t.index ["account_id"], name: "index_messages_on_account_id"
@@ -796,6 +799,7 @@ ActiveRecord::Schema[7.0].define(version: 2023_05_15_051424) do
     t.float "value_in_business_hours"
     t.datetime "event_start_time", precision: nil
     t.datetime "event_end_time", precision: nil
+    t.index ["account_id", "name", "created_at"], name: "reporting_events__account_id__name__created_at"
     t.index ["account_id"], name: "index_reporting_events_on_account_id"
     t.index ["conversation_id"], name: "index_reporting_events_on_conversation_id"
     t.index ["created_at"], name: "index_reporting_events_on_created_at"

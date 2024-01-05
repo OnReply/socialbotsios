@@ -24,7 +24,7 @@
             <tbody>
               <tr v-for="(agent, index) in agentList" :key="agent.email">
                 <!-- Gravtar Image -->
-                <td>
+                <td v-if="agent.type !== 'HiddenUser'">
                   <thumbnail
                     :src="agent.thumbnail"
                     class="columns"
@@ -34,14 +34,14 @@
                   />
                 </td>
                 <!-- Agent Name + Email -->
-                <td>
+                <td v-if="agent.type !== 'HiddenUser'">
                   <span class="agent-name">
                     {{ agent.name }}
                   </span>
                   <span>{{ agent.email }}</span>
                 </td>
                 <!-- Agent Role + Verification Status -->
-                <td>
+                <td v-if="agent.type !== 'HiddenUser'">
                   <span class="agent-name">
                     {{
                       $t(`AGENT_MGMT.AGENT_TYPES.${agent.role.toUpperCase()}`)
@@ -55,7 +55,7 @@
                   </span>
                 </td>
                 <!-- Actions -->
-                <td>
+                <td v-if="agent.type !== 'HiddenUser'">
                   <div class="button-wrapper">
                     <woot-button
                       v-if="showEditAction(agent)"

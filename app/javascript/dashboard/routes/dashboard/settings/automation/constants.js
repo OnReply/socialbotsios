@@ -92,6 +92,11 @@ export const AUTOMATIONS = {
         name: 'Snooze conversation',
         attributeI18nKey: 'MUTE_CONVERSATION',
       },
+      {
+        key: 'open_conversation',
+        name: 'Open conversation',
+        attributeI18nKey: 'OPEN_CONVERSATION',
+      },
 
       {
         key: 'resolve_conversation',
@@ -107,6 +112,11 @@ export const AUTOMATIONS = {
         key: 'send_attachment',
         name: 'Send Attachment',
         attributeI18nKey: 'SEND_ATTACHMENT',
+      },
+      {
+        key: 'send_whatsapp_template',
+        name: 'Send Whatsapp Template',
+        attributeI18nKey: 'SEND_WHATSAPP_TEMPLATE',
       },
     ],
   },
@@ -228,6 +238,11 @@ export const AUTOMATIONS = {
         key: 'resolve_conversation',
         name: 'Resolve conversation',
         attributeI18nKey: 'RESOLVE_CONVERSATION',
+      },
+      {
+        key: 'open_conversation',
+        name: 'Open conversation',
+        attributeI18nKey: 'OPEN_CONVERSATION',
       },
       {
         key: 'send_webhook_event',
@@ -375,6 +390,11 @@ export const AUTOMATIONS = {
         attributeI18nKey: 'RESOLVE_CONVERSATION',
       },
       {
+        key: 'open_conversation',
+        name: 'Open conversation',
+        attributeI18nKey: 'OPEN_CONVERSATION',
+      },
+      {
         key: 'send_webhook_event',
         name: 'Send Webhook Event',
         attributeI18nKey: 'SEND_WEBHOOK_EVENT',
@@ -508,6 +528,11 @@ export const AUTOMATIONS = {
         attributeI18nKey: 'MUTE_CONVERSATION',
       },
       {
+        key: 'open_conversation',
+        name: 'Open conversation',
+        attributeI18nKey: 'OPEN_CONVERSATION',
+      },
+      {
         key: 'send_webhook_event',
         name: 'Send Webhook Event',
         attributeI18nKey: 'SEND_WEBHOOK_EVENT',
@@ -582,6 +607,11 @@ export const AUTOMATION_ACTION_TYPES = [
     inputType: null,
   },
   {
+    key: 'open_conversation',
+    label: 'Open conversation',
+    inputType: null,
+  },
+  {
     key: 'send_webhook_event',
     label: 'Send Webhook Event',
     inputType: 'url',
@@ -600,5 +630,10 @@ export const AUTOMATION_ACTION_TYPES = [
     key: 'change_priority',
     label: 'Change Priority',
     inputType: 'search_select',
+  },
+  {
+    key: 'send_whatsapp_template',
+    label: 'Select Whatsapp Template',
+    inputType: 'template_picker',
   },
 ];

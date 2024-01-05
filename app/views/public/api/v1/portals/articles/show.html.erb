@@ -35,7 +35,9 @@
     <div class="flex flex-col items-start justify-between w-full md:flex-row md:items-center pt-2">
       <div class="flex items-center space-x-2">
         <% if @article.author&.avatar_url&.present? %>
-          <img src="<%= @article.author.avatar_url %>" alt="<%= @article.author.display_name %>" class="w-12 h-12 border rounded-full pr-1">
+          <div class="pr-1">
+            <img src="<%= @article.author.avatar_url %>" alt="<%= @article.author.display_name %>" class="w-12 h-12 border rounded-full">
+          </div>
         <% end %>
         <div>
           <h5 class="text-base font-medium text-slate-900 mb-2"><%= @article.author.available_name %></h5>
@@ -46,6 +48,19 @@
     </div>
   </div>
 </div>
+<% if @article.video_url.present? %>
+  <div class="flex justify-center my-2">
+    <iframe
+      src="<%= @article.find_embed_video_url %>"
+      frameborder="0"
+      webkitallowfullscreen
+      mozallowfullscreen
+      width="560" height="315"
+      allowfullscreen
+      style="position: relative; top: 0; left: 0;"
+    ></iframe>
+  </div>
+<% end %>
 <div class="flex max-w-6xl w-full px-8 mx-auto">
   <article id="cw-article-content" class="flex-grow flex-2 py-12 mx-auto text-slate-800 text-lg max-w-3xl prose break-words">
     <%= @parsed_content %>

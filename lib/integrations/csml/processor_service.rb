@@ -1,5 +1,6 @@
 class Integrations::Csml::ProcessorService < Integrations::BotProcessorService
   pattr_initialize [:event_name!, :event_data!, :agent_bot!]
+  prepend Integrations::Csml::ProcessProductsMessage
 
   private
 
@@ -45,6 +46,42 @@ class Integrations::Csml::ProcessorService < Integrations::BotProcessorService
       id: "chatwoot-csml-bot-#{agent_bot.id}",
       name: "chatwoot-csml-bot-#{agent_bot.id}",
       default_flow: 'chatwoot_bot_flow',
+      custom_components: {
+        "WhatsappProducts": {
+          "params": [
+            {
+              "catalog_id": {
+                "required": true,
+                "type": "String",
+              }
+            },
+            {
+              "header": {
+                "required": true,
+                "type": "String",
+              }
+            },
+            {
+              "products": {
+                "required": true,
+                "type": "Array",
+              }
+            },
+            {
+              "content": {
+                "required": true,
+                "type": "String",
+              }
+            },
+            {
+              "footer": {
+                "required": false,
+                "type": "String",
+              }
+            },
+          ]
+        }
+      },
       flows: [
         {
           id: "chatwoot-csml-bot-flow-#{agent_bot.id}-inbox-#{conversation.inbox.id}",
@@ -64,9 +101,37 @@ class Integrations::Csml::ProcessorService < Integrations::BotProcessorService
 
     return if csml_messages.blank?
 
-    # We do not support wait, typing now.
-    csml_messages.each do |csml_message|
-      create_messages(csml_message, conversation)
+    if ActiveModel::Type::Boolean.new.cast(ENV.fetch('FEATURE_IMPROVES_CSML', nil)) == true
+      # Support csml wait
+      messages_groups = split_messages_by_wait(csml_messages)
+      process_messages_groups(messages_groups)
+    else
+      # We do not support wait, typing now.
+      csml_messages.each do |csml_message|
+        create_messages(csml_message, conversation)
+      end
+    end
+  end
+
+  def split_messages_by_wait(csml_messages)
+    csml_messages.slice_after do |e|
+      e['payload']['content_type'] == 'wait'
+    end.map(&:to_a)
+  end
+
+  def process_messages_groups(messages_groups)
+    wait = 0
+    messages_groups.each do |g|
+      g.each do |message|
+        wait += message['payload']['content']['duration'] if message['payload']['content_type'] == 'wait'
+
+        if wait < 1000
+          AgentBots::CsmlProcessMessagesJob.perform_now(message, conversation, agent_bot)
+        else
+          seconds = wait / 1000
+          AgentBots::CsmlProcessMessagesJob.set(wait: seconds).perform_later(message, conversation, agent_bot)
+        end
+      end
     end
   end
 
@@ -106,10 +171,21 @@ class Integrations::Csml::ProcessorService < Integrations::BotProcessorService
         inbox_id: conversation.inbox_id,
         content: message_payload['content']['title'],
         content_type: 'input_select',
-        content_attributes: { items: buttons },
+        content_attributes: { items: buttons }.merge(aditional_attributes(message_payload)),
         sender: agent_bot
       }
     )
+  end
+
+  def aditional_attributes(message_payload)
+    result = { message_payload: message_payload }
+    aditional_attributes = %w[image video document]
+    aditional_attributes.each do |attribute|
+      attribute_value = message_payload.dig('content', attribute)
+      result.merge!({ "#{attribute}": attribute_value }) if attribute_value.present?
+    end
+
+    result
   end
 
   def prepare_attachment(message_payload, message, account_id)

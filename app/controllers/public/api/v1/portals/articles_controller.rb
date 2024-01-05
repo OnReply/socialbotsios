@@ -6,12 +6,15 @@ class Public::Api::V1::Portals::ArticlesController < Public::Api::V1::Portals::B
   layout 'portal'
 
   def index
+    return redirect_to unauthorized_path if current_user.nil?
     @articles = @portal.articles
     @articles = @articles.search(list_params) if list_params.present?
     @articles.order(position: :asc)
   end
 
-  def show; end
+  def show
+    return redirect_to unauthorized_path if current_user.nil?
+  end
 
   private
 
@@ -43,8 +46,6 @@ class Public::Api::V1::Portals::ArticlesController < Public::Api::V1::Portals::B
   end
 
   def render_article_content(content)
-    # rubocop:disable Rails/OutputSafety
-    CommonMarker.render_html(content).html_safe
-    # rubocop:enable Rails/OutputSafety
+    ChatwootMarkdownRenderer.new(content).render_article
   end
 end

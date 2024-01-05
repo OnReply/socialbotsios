@@ -112,7 +112,6 @@ import { mixin as clickaway } from 'vue-clickaway';
 import rtlMixin from 'shared/mixins/rtlMixin';
 
 import NotificationPanelList from './NotificationPanelList';
-
 export default {
   components: {
     NotificationPanelList,
@@ -162,7 +161,7 @@ export default {
     },
   },
   mounted() {
-    this.$store.dispatch('notifications/get', { page: 1 });
+    this.$store.dispatch('notifications/get', { page: 1});
   },
   methods: {
     onPageChange(page) {

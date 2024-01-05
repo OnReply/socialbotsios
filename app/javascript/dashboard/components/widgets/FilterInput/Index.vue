@@ -26,6 +26,7 @@
           v-else
           v-model="attributeKey"
           class="filter__question"
+          :disabled="hasWhatsappAction && shouldDisable"
           @change="resetFilter()"
         >
           <option
@@ -105,6 +106,7 @@
           icon="dismiss"
           variant="clear"
           color-scheme="secondary"
+          :disabled="hasWhatsappAction && shouldDisable"
           @click="removeFilter"
         />
       </div>
@@ -161,6 +163,18 @@ export default {
     v: {
       type: Object,
       default: () => null,
+    },
+    hasWhatsappAction: {
+      type: Boolean,
+      default: false
+    },
+    isEventMessageCreated: {
+      type: Boolean,
+      default: false
+    },
+    shouldDisable: {
+      type: Boolean,
+      default: false
     },
     showUserInput: {
       type: Boolean,

@@ -69,6 +69,9 @@
               "
               :show-query-operator="i !== automation.conditions.length - 1"
               :v="$v.automation.conditions.$each[i]"
+              :should-disable="shouldDisable(i,automation.conditions[i].attribute_key)"
+              :has-whatsapp-action="automation.actions.some(action => action.action_name === 'send_whatsapp_template')"
+              :is-event-message-created="automation.event_name == 'message_created'"
               @resetFilter="resetFilter(i, automation.conditions[i])"
               @removeFilter="removeFilter(i)"
             />
@@ -101,8 +104,10 @@
               :show-action-input="showActionInput(action.action_name)"
               :v="$v.automation.actions.$each[i]"
               :initial-file-name="getFileName(action, automation.files)"
+              @changeImage="changeImage"
               @resetAction="resetAction(i)"
               @removeAction="removeAction(i)"
+              @addWhatsappDefaultCondition="addWhatsappDefaultCondition()"
             />
             <div class="filter-actions">
               <woot-button
@@ -178,7 +183,26 @@ export default {
       showDeleteConfirmationModal: false,
       allCustomAttributes: [],
       mode: 'edit',
+      image: null,
     };
+  },
+  created() {
+    const isFeatureEnabledonAccount = this.$store.getters['accounts/isFeatureEnabledonAccount'];
+    const id = this.$store.getters['getCurrentAccountId'];
+    const ecomActions = 
+    [
+      {
+        key: 'close_conversation',
+        label: 'Close Conversation',
+        inputType: null,
+      }
+    ]
+    const lastObject = this.automationActionTypes[this.automationActionTypes.length - 1];
+
+    if( isFeatureEnabledonAccount(id, 'ecommerece') && lastObject.key !== 'close_conversation' )
+    {
+      this.automationActionTypes.push(...ecomActions)
+    }
   },
   computed: {
     hasAutomationMutated() {

@@ -29,7 +29,8 @@ class DashboardController < ActionController::Base
       'LOGOUT_REDIRECT_LINK',
       'DISABLE_USER_PROFILE_UPDATE',
       'DEPLOYMENT_ENV',
-      'CSML_EDITOR_HOST'
+      'CSML_EDITOR_HOST',
+      'USER_ONBOARDING_VIDEO_URL'
     ).merge(app_config)
   end
 

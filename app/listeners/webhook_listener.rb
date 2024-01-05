@@ -83,8 +83,18 @@ class WebhookListener < BaseListener
     WebhookJob.perform_later(inbox.channel.webhook_url, payload)
   end
 
+  def deliver_whatsapp_order_webhook(payload)
+    webhook_url = ENV['WHATSAPP_ORDERS_WEBHOOK']
+    WebhookJob.perform_later(webhook_url, payload)
+  end
+
+  def deliver_whatsapp_order_webhook?(payload)
+    ENV['WHATSAPP_ORDERS_WEBHOOK'].present? && payload.dig(:content_attributes, 'type') == 'order'
+  end
+
   def deliver_webhook_payloads(payload, inbox)
     deliver_account_webhooks(payload, inbox.account)
     deliver_api_inbox_webhooks(payload, inbox)
+    deliver_whatsapp_order_webhook(payload) if deliver_whatsapp_order_webhook?(payload)      
   end
 end

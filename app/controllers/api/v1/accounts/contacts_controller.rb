@@ -42,6 +42,13 @@ class Api::V1::Accounts::ContactsController < Api::V1::Accounts::BaseController
     head :ok
   end
 
+  def export
+    column_names = params['column_names']
+    filter_label = params['filter_label']
+    Account::ContactsExportJob.perform_later(Current.account.id, column_names, filter_label)
+    head :ok, message: I18n.t('errors.contacts.export.success')
+  end
+
   # returns online contacts
   def active
     contacts = Current.account.contacts.where(id: ::OnlineStatusTracker

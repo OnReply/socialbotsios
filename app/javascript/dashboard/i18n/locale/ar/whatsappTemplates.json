@@ -19,7 +19,59 @@
             "VARIABLE_PLACEHOLDER": "أدخل قيمة %{variable}",
             "GO_BACK_LABEL": "العودة للخلف",
             "SEND_MESSAGE_LABEL": "إرسال الرسالة",
-            "FORM_ERROR_MESSAGE": "يرجى ملء جميع المتغيرات قبل الإرسال"
+            "FORM_ERROR_MESSAGE": "يرجى ملء جميع المتغيرات قبل الإرسال",
+            "ATTACH_IMAGE_ERROR": "الرجاء إرفاق الصورة قبل الإرسال",
+            "SELECT_TEMPLATE": "اختر قالب"
+        },
+        "BUILDER": {
+            "CREATE": "إنشاء قالب جديد",
+            "SUCCESSFUL_SUBMISSION": "تم إنشاء القالب بنجاح. سيتم ظهوره بعد المزامنة. شكرًا لصبرك.",
+            "SUCCESSFUL_EDIT": "تم تحرير القالب بنجاح. التغييرات تظهر بعد المزامنة. شكرًا على صبرك.",
+            "SUCCESSFUL_DELETION": "تم حذف القالب بنجاح. سيختفي بعد المزامنة. شكرًا لصبرك.",
+            "DELETE": "حذف القالب",
+            "DELETE_DESCRIPTION": "هل أنت متأكد أنك تريد حذف هذا القالب؟ هذا الإجراء لا يمكن التراجع عنه.",
+            "FORM": {
+                "NAME": "الاسم",
+                "CATEGORY": "الفئة",
+                "LANGUAGE": "اللغة",
+                "HEADER_TYPE": "نوع العنوان",
+                "HEADER_TYPES": {
+                    "TEXT": "نص",
+                    "IMAGE": "صورة",
+                    "NONE":"لا شيء"
+                },
+                "HEADER": "العنوان",
+                "BODY": "المحتوى",
+                "FOOTER": "تذييل الصفحة",
+                "BUTTONS": {
+                    "BUTTON": "زِرّ (اختياري)",
+                    "BUTTON_TYPE": {
+                        "NONE": "لا شيء",
+                        "QUICK_REPLY": "رد سريع",
+                        "CALL": "اتصال"
+                    },
+                    "BUTTON_TEXT": "نص الزر",
+                    "TYPE_OF_ACTION": {
+                        "LABEL": "نوع الإجراء",
+                        "PHONE_NUMBER": "اتصال برقم الهاتف",
+                        "URL": "زيارة الموقع"
+                    },
+                    "PHONE_NUMBER": {
+                        "LABEL": "رقم الهاتف",
+                        "ERROR": "يرجى إدخال رقم هاتف صحيح"
+                    },
+                    "URL": {
+                        "LABEL": "رابط الموقع",
+                        "ERROR": "الرجاء إدخال رابط صحيح",
+                        "EXAMPLE": "مثال",
+                        "TYPE": {
+                            "STATIC": "ثابت",
+                            "DYNAMIC": "متغير"
+                        }
+                    },
+                    "NEW_BUTTON": "إضافة زر جديد"
+                }
+            }
         }
     }
 }

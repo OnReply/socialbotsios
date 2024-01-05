@@ -153,7 +153,7 @@ export default {
       this.$v.$touch();
       if (this.$v.$invalid) return;
       const automation = generateAutomationPayload(this.automation);
-      this.$emit('saveAutomation', automation, this.mode);
+      this.$emit('saveAutomation', automation, this.mode, this.image);
     },
     resetFilter(index, currentCondition) {
       this.automation.conditions[index].filter_operator = this.automationTypes[
@@ -210,7 +210,7 @@ export default {
       return conditions;
     },
     generateActionsArray(action) {
-      const params = action.action_params;
+      const params = action.action_params || [];
       let actionParams = [];
       const inputType = this.automationActionTypes.find(
         item => item.key === action.action_name
@@ -232,7 +232,7 @@ export default {
     manifestActions(automation) {
       let actionParams = [];
       const actions = automation.actions.map(action => {
-        if (action.action_params.length) {
+        if ((action.action_params || []).length) {
           actionParams = this.generateActionsArray(action);
         }
         return {
@@ -287,6 +287,41 @@ export default {
       this.automationTypes.conversation_opened.conditions.push(
         ...manifestedCustomAttributes
       );
+    },
+    addWhatsappDefaultCondition() {
+      const inbox_object = {
+        attribute_key: "inbox_id",
+        custom_attribute_type: "",
+        filter_operator: "equal_to",
+        query_operator: "and",
+        values: ""
+      }
+      const message_object = {
+        attribute_key: "message_type",
+        custom_attribute_type: "",
+        filter_operator: "equal_to",
+        query_operator: "and",
+        values: ""
+      }
+      if (!this.automation.conditions.some(condition => condition.attribute_key === 'inbox_id')) {
+        this.automation.conditions.push(inbox_object);
+      }
+      if (this.automation.event_name == 'message_created') {
+        if (!this.automation.conditions.some(condition => condition.attribute_key === 'message_type')) {
+          this.automation.conditions.push(message_object);
+        }
+      }
+    },
+    changeImage(image) {
+      this.image = image
+    },
+    shouldDisable(index, key){
+      if(key !== 'message_type' && key !== 'inbox_id') return false;
+      const indexesWithTargetValue = this.automation.conditions
+      .map((object, index) => (object.attribute_key === key ? index : -1))
+      .filter(index => index !== -1);
+      if (indexesWithTargetValue.length == 0) return false
+      return index == indexesWithTargetValue[0]
     },
   },
 };

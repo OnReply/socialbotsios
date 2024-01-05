@@ -1,0 +1,286 @@
+[
+  {
+    "language": "Afrikaans",
+    "code": "af"
+  },
+  {
+    "language": "Albanian",
+    "code": "sq"
+  },
+  {
+    "language": "Arabic",
+    "code": "ar"
+  },
+  {
+    "language": "Azerbaijani",
+    "code": "az"
+  },
+  {
+    "language": "Bengali",
+    "code": "bn"
+  },
+  {
+    "language": "Bulgarian",
+    "code": "bg"
+  },
+  {
+    "language": "Catalan",
+    "code": "ca"
+  },
+  {
+    "language": "Chinese (CHN)",
+    "code": "zh_CN"
+  },
+  {
+    "language": "Chinese (HKG)",
+    "code": "zh_HK"
+  },
+  {
+    "language": "Chinese (TAI)",
+    "code": "zh_TW"
+  },
+  {
+    "language": "Croatian",
+    "code": "hr"
+  },
+  {
+    "language": "Czech",
+    "code": "cs"
+  },
+  {
+    "language": "Danish",
+    "code": "da"
+  },
+  {
+    "language": "Dutch",
+    "code": "nl"
+  },
+  {
+    "language": "English",
+    "code": "en"
+  },
+  {
+    "language": "English (UK)",
+    "code": "en_GB"
+  },
+  {
+    "language": "English (US)",
+    "code": "en_US"
+  },
+  {
+    "language": "Estonian",
+    "code": "et"
+  },
+  {
+    "language": "Filipino",
+    "code": "fil"
+  },
+  {
+    "language": "Finnish",
+    "code": "fi"
+  },
+  {
+    "language": "French",
+    "code": "fr"
+  },
+  {
+    "language": "Georgian",
+    "code": "ka"
+  },
+  {
+    "language": "German",
+    "code": "de"
+  },
+  {
+    "language": "Greek",
+    "code": "el"
+  },
+  {
+    "language": "Gujarati",
+    "code": "gu"
+  },
+  {
+    "language": "Hausa",
+    "code": "ha"
+  },
+  {
+    "language": "Hebrew",
+    "code": "he"
+  },
+  {
+    "language": "Hindi",
+    "code": "hi"
+  },
+  {
+    "language": "Hungarian",
+    "code": "hu"
+  },
+  {
+    "language": "Indonesian",
+    "code": "id"
+  },
+  {
+    "language": "Irish",
+    "code": "ga"
+  },
+  {
+    "language": "Italian",
+    "code": "it"
+  },
+  {
+    "language": "Japanese",
+    "code": "ja"
+  },
+  {
+    "language": "Kannada",
+    "code": "kn"
+  },
+  {
+    "language": "Kazakh",
+    "code": "kk"
+  },
+  {
+    "language": "Kinyarwanda",
+    "code": "rw_RW"
+  },
+  {
+    "language": "Korean",
+    "code": "ko"
+  },
+  {
+    "language": "Kyrgyz (Kyrgyzstan)",
+    "Code": "ky_KG"
+  },
+  {
+    "Language": "Lao",
+    "Code": "lo"
+  },
+  {
+    "Language": "Latvian",
+    "Code": "lv"
+  },
+  {
+    "Language": "Lithuanian",
+    "Code": "lt"
+  },
+  {
+    "Language": "Macedonian",
+    "Code": "mk"
+  },
+  {
+    "Language": "Malay",
+    "Code": "ms"
+  },
+  {
+    "Language": "Malayalam",
+    "Code": "ml"
+  },
+  {
+    "Language": "Marathi",
+    "Code": "mr"
+  },
+  {
+    "Language": "Norwegian",
+    "Code": "nb"
+  },
+  {
+    "Language": "Persian",
+    "Code": "fa"
+  },
+  {
+    "Language": "Polish",
+    "Code": "pl"
+  },
+  {
+    "Language": "Portuguese (BR)",
+    "Code": "pt_BR"
+  },
+  {
+    "Language": "Portuguese (POR)",
+    "Code": "pt_PT"
+  },
+  {
+    "Language": "Punjabi",
+    "Code": "pa"
+  },
+  {
+    "Language": "Romanian",
+    "Code": "ro"
+  },
+  {
+    "Language": "Russian",
+    "Code": "ru"
+  },
+  {
+    "Language": "Serbian",
+    "Code": "sr"
+  },
+  {
+    "Language": "Slovak",
+    "Code": "sk"
+  },
+  {
+    "Language": "Slovenian",
+    "Code": "sl"
+  },
+  {
+    "Language": "Spanish",
+    "Code": "es"
+  },
+  {
+    "Language": "Spanish (ARG)",
+    "Code": "es_AR"
+  },
+  {
+    "Language": "Spanish (SPA)",
+    "Code": "es_ES"
+  },
+  {
+    "Language": "Spanish (MEX)",
+    "Code": "es_MX"
+  },
+  {
+    "Language": "Swahili",
+    "Code": "sw"
+  },
+  {
+    "Language": "Swedish",
+    "Code": "sv"
+  },
+  {
+    "Language": "Tamil",
+    "Code": "ta"
+  },
+  {
+    "Language": "Telugu",
+    "Code": "te"
+  },
+  {
+    "Language": "Thai",
+    "Code": "th"
+  },
+  {
+    "Language": "Turkish",
+    "Code": "tr"
+  },
+  {
+    "Language": "Ukrainian",
+    "Code": "uk"
+  },
+  {
+    "Language": "Urdu",
+    "Code": "ur"
+  },
+  {
+    "Language": "Uzbek",
+    "Code": "uz"
+  },
+  {
+    "Language": "Vietnamese",
+    "Code": "vi"
+  },
+  {
+    "Language": "Zulu",
+    "Code": "zu"
+  }
+]

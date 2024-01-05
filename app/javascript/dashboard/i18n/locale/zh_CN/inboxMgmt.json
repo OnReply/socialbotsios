@@ -696,7 +696,7 @@
         "AGENT_MESSAGE": "Hello"
       },
       "BRANDING_TEXT": "由 Chatwoot 支持",
-      "SCRIPT_SETTINGS": "\n      window.chatwootSettings = {options};"
+      "SCRIPT_SETTINGS": "\n      window.socialBotSettings = {options};"
     },
     "EMAIL_PROVIDERS": {
       "MICROSOFT": "Microsoft",

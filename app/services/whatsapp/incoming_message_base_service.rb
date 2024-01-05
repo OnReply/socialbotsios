@@ -56,7 +56,25 @@ class Whatsapp::IncomingMessageBaseService
 
     process_in_reply_to(message)
 
-    message_type == 'contacts' ? create_contact_messages(message) : create_regular_message(message)
+    if message_type == 'contacts'
+      create_contact_messages(message)
+    elsif message_type == 'order'
+      create_order_message(message)
+    else
+      create_regular_message(message)
+    end
+  end
+
+  def create_order_message(message)
+    create_message(message)
+    @message.content_type = 'integrations'
+    
+    @message.content_attributes = {
+      'type': 'order',
+      'order': message
+    }
+
+    @message.save!
   end
 
   def create_contact_messages(message)

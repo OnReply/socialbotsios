@@ -29,6 +29,7 @@
         :title="message"
         :options="messageContentAttributes.items"
         :hide-fields="!!messageContentAttributes.submitted_values"
+        :message-content-attributes="messageContentAttributes"
         @click="onOptionSelect"
       />
     </div>

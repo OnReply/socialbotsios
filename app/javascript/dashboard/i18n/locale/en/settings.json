@@ -247,7 +247,8 @@
       "TEXT": "Mark offline automatically",
       "INFO_TEXT": "Let the system automatically mark you offline when you aren't using the app or dashboard."
     },
-    "DOCS": "Read docs"
+    "DOCS": "Read docs",
+    "ECOMMERECE": "Ecommerece"
   },
   "BILLING_SETTINGS": {
     "TITLE": "Billing",
@@ -274,7 +275,7 @@
     "API": {
       "SUCCESS_MESSAGE": "Account created successfully",
       "EXIST_MESSAGE": "Account already exists",
-      "ERROR_MESSAGE": "Could not connect to Woot Server, Please try again later"
+      "ERROR_MESSAGE": "Could not connect to Social Bot Server, Please try again later"
     },
     "FORM": {
       "NAME": {

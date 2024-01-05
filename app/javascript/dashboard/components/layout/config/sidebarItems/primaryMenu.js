@@ -54,6 +54,15 @@ const primaryMenuItems = accountId => [
     toStateName: 'settings_home',
     roles: ['administrator', 'agent'],
   },
+  {
+    icon: 'cart',
+    key: 'ecommerece',
+    label: 'ECOMMERECE',
+    featureFlag: FEATURE_FLAGS.ECOMMERECE,
+    toState: frontendURL(`accounts/${accountId}/ecommerece`),
+    toStateName: 'ecommerece_dashboard',
+    roles: ['administrator'],
+  },
 ];
 
 export default primaryMenuItems;

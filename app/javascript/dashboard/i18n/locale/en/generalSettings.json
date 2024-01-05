@@ -83,7 +83,8 @@
       "conversation_assignment": "Conversation Assigned",
       "assigned_conversation_new_message": "New Message",
       "participating_conversation_new_message": "New Message",
-      "conversation_mention": "Mention"
+      "conversation_mention": "Mention",
+      "article_creation": "New Article"
     }
   },
   "NETWORK": {
@@ -138,7 +139,8 @@
       "SNOOZE_CONVERSATION": "Snooze Conversation",
       "UNTIL_NEXT_REPLY": "Until next reply",
       "UNTIL_NEXT_WEEK": "Until next week",
-      "UNTIL_TOMORROW": "Until tomorrow"
+      "UNTIL_TOMORROW": "Until tomorrow",
+      "OPEN_CONVERSATION": "Open Conversation"
     }
   },
   "DASHBOARD_APPS": {

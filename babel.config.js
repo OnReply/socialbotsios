@@ -8,6 +8,9 @@ const plugins = () => [
     },
   ],
   [require('babel-plugin-transform-vue-jsx')],
+  [require('@babel/plugin-proposal-optional-chaining')],
+  [require('@babel/plugin-proposal-logical-assignment-operators')],
+  [require('@babel/plugin-proposal-nullish-coalescing-operator')]
 ];
 
 module.exports = api => {

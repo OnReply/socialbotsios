@@ -11,34 +11,37 @@ import {
   hasUserKeys,
 } from '../sdk/cookieHelpers';
 import { addClasses, removeClasses } from '../sdk/DOMHelpers';
+import { setCookieWithDomain } from '../sdk/cookieHelpers';
 import { SDK_SET_BUBBLE_VISIBILITY } from 'shared/constants/sharedFrameEvents';
 const runSDK = ({ baseUrl, websiteToken }) => {
   if (window.$chatwoot) {
     return;
   }
 
-  const chatwootSettings = window.chatwootSettings || {};
-  let locale = chatwootSettings.locale;
+  const socialBotSettings = window.socialBotSettings || {};
+  let locale = socialBotSettings.locale;
+  let baseDomain = socialBotSettings.baseDomain;
 
-  if (chatwootSettings.useBrowserLanguage) {
+  if (socialBotSettings.useBrowserLanguage) {
     locale = window.navigator.language.replace('-', '_');
   }
 
   window.$chatwoot = {
     baseUrl,
+    baseDomain,
     hasLoaded: false,
-    hideMessageBubble: chatwootSettings.hideMessageBubble || false,
+    hideMessageBubble: socialBotSettings.hideMessageBubble || false,
     isOpen: false,
-    position: chatwootSettings.position === 'left' ? 'left' : 'right',
+    position: socialBotSettings.position === 'left' ? 'left' : 'right',
     websiteToken,
     locale,
-    useBrowserLanguage: chatwootSettings.useBrowserLanguage || false,
-    type: getBubbleView(chatwootSettings.type),
-    launcherTitle: chatwootSettings.launcherTitle || '',
-    showPopoutButton: chatwootSettings.showPopoutButton || false,
-    widgetStyle: getWidgetStyle(chatwootSettings.widgetStyle) || 'standard',
+    useBrowserLanguage: socialBotSettings.useBrowserLanguage || false,
+    type: getBubbleView(socialBotSettings.type),
+    launcherTitle: socialBotSettings.launcherTitle || '',
+    showPopoutButton: socialBotSettings.showPopoutButton || false,
+    widgetStyle: getWidgetStyle(socialBotSettings.widgetStyle) || 'standard',
     resetTriggered: false,
-    darkMode: getDarkMode(chatwootSettings.darkMode),
+    darkMode: getDarkMode(socialBotSettings.darkMode),
 
     toggle(state) {
       IFrameHelper.events.toggleBubble(state);
@@ -90,9 +93,9 @@ const runSDK = ({ baseUrl, websiteToken }) => {
       window.$chatwoot.identifier = identifier;
       window.$chatwoot.user = user;
       IFrameHelper.sendMessage('set-user', { identifier, user });
-      Cookies.set(userCookieName, hashToBeStored, {
-        expires: 365,
-        sameSite: 'Lax',
+
+      setCookieWithDomain(userCookieName, hashToBeStored, {
+        baseDomain,
       });
     },
 
@@ -146,6 +149,12 @@ const runSDK = ({ baseUrl, websiteToken }) => {
       IFrameHelper.sendMessage('set-locale', { locale: localeToBeUsed });
     },
 
+    setColorScheme(darkMode = 'light') {
+      IFrameHelper.sendMessage('set-color-scheme', {
+        darkMode: getDarkMode(darkMode),
+      });
+    },
+
     reset() {
       if (window.$chatwoot.isOpen) {
         IFrameHelper.events.toggleBubble();
@@ -170,6 +179,6 @@ const runSDK = ({ baseUrl, websiteToken }) => {
   });
 };
 
-window.chatwootSDK = {
+window.socialBotSDK = {
   run: runSDK,
 };

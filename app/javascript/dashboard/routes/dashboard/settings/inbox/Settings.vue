@@ -385,6 +385,12 @@
     <div v-if="selectedTabKey === 'botConfiguration'">
       <bot-configuration :inbox="inbox" />
     </div>
+    <div v-if="selectedTabKey === 'templates'">
+      <whatsapp-template :inbox="inbox" />
+    </div>
+    <div v-if="selectedTabKey === 'profile'">
+      <whatsapp-profile-page :inbox="inbox"/>
+    </div>
   </div>
 </template>
 
@@ -404,7 +410,9 @@ import ConfigurationPage from './settingsPage/ConfigurationPage';
 import CollaboratorsPage from './settingsPage/CollaboratorsPage';
 import WidgetBuilder from './WidgetBuilder';
 import BotConfiguration from './components/BotConfiguration';
+import WhatsappTemplate from './components/WhatsappTemplate';
 import { FEATURE_FLAGS } from '../../../../featureFlags';
+import WhatsappProfilePage from './settingsPage/WhatsappProfilePage.vue';
 
 export default {
   components: {
@@ -418,6 +426,8 @@ export default {
     SettingsSection,
     WeeklyAvailability,
     WidgetBuilder,
+    WhatsappTemplate,
+    WhatsappProfilePage
   },
   mixins: [alertMixin, configMixin, inboxMixin],
   data() {
@@ -512,7 +522,19 @@ export default {
           },
         ];
       }
-
+      if (this.isAWhatsAppCloudChannel) {
+        visibleToAllChannelTabs = [
+          ...visibleToAllChannelTabs,
+          {
+            key: 'templates',
+            name: this.$t('INBOX_MGMT.TABS.TEMPLATES'),
+          },
+          {
+            key: 'profile',
+            name: this.$t('INBOX_MGMT.TABS.PROFILE'),
+          },
+        ];
+      }
       if (
         this.isFeatureEnabledonAccount(
           this.accountId,
@@ -536,7 +558,6 @@ export default {
     inbox() {
       return this.$store.getters['inboxes/getInbox'](this.currentInboxId);
     },
-
     inboxName() {
       if (this.isATwilioSMSChannel || this.isATwilioWhatsAppChannel) {
         return `${this.inbox.name} (${this.inbox.messaging_service_sid ||

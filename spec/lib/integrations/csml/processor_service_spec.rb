@@ -53,7 +53,7 @@ describe Integrations::Csml::ProcessorService do
         processor.perform
         expect(conversation.messages.last.content).to eql('Question Payload')
         expect(conversation.messages.last.content_type).to eql('input_select')
-        expect(conversation.messages.last.content_attributes).to eql({ items: [{ title: 'Q1', value: 'q1' }] }.with_indifferent_access)
+        expect(conversation.messages.last.content_attributes).to eql({"items"=>[{"title"=>"Q1", "value"=>"q1"}], "message_payload"=>{"content"=>{"buttons"=>[{"content"=>{"payload"=>"q1", "title"=>"Q1"}}], "title"=>"Question Payload"}, "content_type"=>"question"}}.with_indifferent_access)
       end
     end
 

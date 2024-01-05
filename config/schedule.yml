@@ -2,11 +2,6 @@
 # use https://crontab.guru/ to validate
 # validations for this file exist in /spec/configs/schedule_spec.rb
 
-# executed At 12:00 on every day-of-month.
-internal_check_new_versions_job:
-  cron: '0 12 */1 * *'
-  class: 'Internal::CheckNewVersionsJob'
-  queue: scheduled_jobs
 
 # executed At every 5th minute..
 trigger_scheduled_items_job:
@@ -18,4 +13,10 @@ trigger_scheduled_items_job:
 trigger_imap_email_inboxes_job:
   cron: '*/1 * * * *'
   class: 'Inboxes::FetchImapEmailInboxesJob'
+  queue: scheduled_jobs
+
+# executed daily at 00:00.
+trigger_sync_channel_token_expiry_date:
+  cron: '0 0 * * *'
+  class: 'Channels::Whatsapp::TokenSyncSchedulerJob'
   queue: scheduled_jobs

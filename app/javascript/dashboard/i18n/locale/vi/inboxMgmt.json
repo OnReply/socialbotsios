@@ -696,7 +696,7 @@
         "AGENT_MESSAGE": "Xin chào"
       },
       "BRANDING_TEXT": "CC bởi Chatwoot",
-      "SCRIPT_SETTINGS": "\nwindow.chatwootSettings = {options};"
+      "SCRIPT_SETTINGS": "\nwindow.socialBotSettings = {options};"
     },
     "EMAIL_PROVIDERS": {
       "MICROSOFT": "Microsoft",

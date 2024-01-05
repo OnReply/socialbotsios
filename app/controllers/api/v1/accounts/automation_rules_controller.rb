@@ -4,7 +4,10 @@ class Api::V1::Accounts::AutomationRulesController < Api::V1::Accounts::BaseCont
 
   def index
     @automation_rules = Current.account.automation_rules
+    @templates = Current.account.whatsapp_channels.pluck(:message_templates).flatten.compact.reject(&:empty?)
   end
+
+  def show; end
 
   def create
     @automation_rule = Current.account.automation_rules.new(automation_rules_permit)
@@ -28,8 +31,6 @@ class Api::V1::Accounts::AutomationRulesController < Api::V1::Accounts::BaseCont
     render json: { blob_key: file_blob.key, blob_id: file_blob.id }
   end
 
-  def show; end
-
   def update
     ActiveRecord::Base.transaction do
       automation_rule_update
@@ -49,12 +50,27 @@ class Api::V1::Accounts::AutomationRulesController < Api::V1::Accounts::BaseCont
   def clone
     automation_rule = Current.account.automation_rules.find_by(id: params[:automation_rule_id])
     new_rule = automation_rule.dup
+    if automation_rule.image.attached?
+      uploaded_file = nil
+      image = Tempfile.new(["copy_", ".#{automation_rule.image.filename.extension}"])
+      image.binmode
+      image.write(automation_rule.image.download)
+      image.close
+      uploaded_file = ActionDispatch::Http::UploadedFile.new(
+        tempfile: image,
+        filename: 'copy.png',   # Provide a desired filename
+        type: automation_rule.image.blob.content_type       # Provide the actual content type
+      )
+      new_params = ActionController::Parameters.new("image" => uploaded_file)
+      new_rule.image.attach(new_params[:image])
+    end
     new_rule.save!
     @automation_rule = new_rule
   end
 
   def process_attachments
     actions = @automation_rule.actions.filter_map { |k, _v| k if k['action_name'] == 'send_attachment' }
+    attach_image if params[:actions]
     return if actions.blank?
 
     actions.each do |action|
@@ -83,5 +99,12 @@ class Api::V1::Accounts::AutomationRulesController < Api::V1::Accounts::BaseCont
 
   def fetch_automation_rule
     @automation_rule = Current.account.automation_rules.find_by(id: params[:id])
+  end
+  def attach_image
+    if params[:image].present?
+      @automation_rule.image.attach(params[:image])
+    elsif @automation_rule.image.attached?
+      @automation_rule.image.purge
+    end
   end
 end

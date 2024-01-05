@@ -17,7 +17,6 @@
     </nav>
     <div class="menu vertical user-menu">
       <primary-nav-item
-        v-if="!isACustomBrandedInstance"
         icon="book-open-globe"
         name="DOCS"
         :open-in-new-page="true"

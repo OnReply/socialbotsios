@@ -23,6 +23,9 @@ import { default as _settings } from './settings.json';
 import { default as _signup } from './signup.json';
 import { default as _teamsSettings } from './teamsSettings.json';
 import { default as _whatsappTemplates } from './whatsappTemplates.json';
+import { default as _whatsappProfile } from './whatsappProfile.json';
+import ecommerece from './ecommerece.json';
+
 import { default as _helpCenter } from './helpCenter.json';
 
 export default {
@@ -52,4 +55,6 @@ export default {
   ..._whatsappTemplates,
   ..._bulkActions,
   ..._helpCenter,
+  ..._whatsappProfile,
+  ...ecommerece
 };

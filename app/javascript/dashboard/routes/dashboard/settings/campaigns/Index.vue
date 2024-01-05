@@ -1,17 +1,7 @@
 <template>
-  <div class="column content-box">
-    <woot-button
-      color-scheme="success"
-      class-names="button--fixed-top"
-      icon="add-circle"
-      @click="openAddPopup"
-    >
-      {{ buttonText }}
-    </woot-button>
-    <campaign />
-    <woot-modal :show.sync="showAddPopup" :on-close="hideAddPopup">
-      <add-campaign @on-close="hideAddPopup" />
-    </woot-modal>
+  <div class="h-full">
+    <iframe :src="iframeURL()" height="100%" width="100%" />
+    
   </div>
 </template>
 
@@ -19,6 +9,10 @@
 import campaignMixin from 'shared/mixins/campaignMixin';
 import Campaign from './Campaign.vue';
 import AddCampaign from './AddCampaign';
+import { mapGetters } from 'vuex';
+import md5 from 'md5';
+
+
 
 export default {
   components: {
@@ -36,6 +30,9 @@ export default {
       }
       return this.$t('CAMPAIGN.HEADER_BTN_TXT.ONE_OFF');
     },
+    ...mapGetters({
+      accountId: 'getCurrentAccountId',
+    }),
   },
   mounted() {
     this.$store.dispatch('campaigns/get');
@@ -47,6 +44,20 @@ export default {
     hideAddPopup() {
       this.showAddPopup = false;
     },
+    iframeURL() {
+      return (
+        "https://help.socialbot.dev/campaigns?account_id="+
+        md5(
+          this.accountId.toString() + window.chatwootConfig.randomString
+        )
+      );
+    },
   },
 };
 </script>
+
+<style scoped>
+.h-full {
+  height: 100%;
+}
+</style>

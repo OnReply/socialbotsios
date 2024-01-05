@@ -40,6 +40,12 @@ const endPoints = {
     params: { omniauth_token: '' },
   },
 
+  fetchFacebookTokens: {
+    url(accountId) {
+      return `api/v1/accounts/${accountId}/callbacks/facebook_tokens.json`;
+    },
+  },
+
   deleteAvatar: {
     url: '/api/v1/profile/avatar',
   },

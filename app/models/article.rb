@@ -10,6 +10,7 @@
 #  slug                  :string           not null
 #  status                :integer
 #  title                 :string
+#  video_url             :string           default("")
 #  views                 :integer
 #  created_at            :datetime         not null
 #  updated_at            :datetime         not null
@@ -28,6 +29,8 @@
 #
 class Article < ApplicationRecord
   include PgSearch::Model
+
+  ALLOWED_PLATFORMS = %w[youtube loom]
 
   has_many :associated_articles,
            class_name: :Article,
@@ -52,6 +55,7 @@ class Article < ApplicationRecord
   validates :author_id, presence: true
   validates :title, presence: true
   validates :content, presence: true
+  validate :video_url_platform
 
   # ensuring that the position is always set correctly
   before_create :add_position_to_article
@@ -65,6 +69,13 @@ class Article < ApplicationRecord
   scope :search_by_status, ->(status) { where(status: status) if status.present? }
   scope :order_by_updated_at, -> { reorder(updated_at: :desc) }
   scope :order_by_position, -> { reorder(position: :asc) }
+
+
+  def video_url_platform
+    return unless video_url.present?
+    errors.add(:video_url, 'wrong website platform to embed video') unless ALLOWED_PLATFORMS.include?(find_platform.to_s)
+  end
+
 
   # TODO: if text search slows down https://www.postgresql.org/docs/current/textsearch-features.html#TEXTSEARCH-UPDATE-TRIGGERS
   pg_search_scope(
@@ -117,12 +128,18 @@ class Article < ApplicationRecord
     # rubocop:enable Rails/SkipsModelValidations
   end
 
+  
   def self.update_positions(positions_hash)
     positions_hash.each do |article_id, new_position|
       # Find the article by its ID and update its position
       article = Article.find(article_id)
       article.update!(position: new_position)
     end
+  end
+
+  def find_embed_video_url
+    id = ::ParseVideoUrlService.new(video_url: self.video_url, platform: self.find_platform).execute
+    generate_src_url(id, self.find_platform)
   end
 
   private
@@ -167,5 +184,23 @@ class Article < ApplicationRecord
 
   def ensure_article_slug
     self.slug ||= "#{Time.now.utc.to_i}-#{title.underscore.parameterize(separator: '-')}" if title.present?
+  end
+
+
+  
+  def find_platform 
+    if video_url.include?('youtube') || video_url.include?('youtu.be')
+      return :youtube
+    elsif video_url.include?('loom')
+      return :loom
+    end
+  end
+  
+  def generate_src_url(id,platform)
+    if(platform == :youtube)
+      "https://www.youtube.com/embed/#{id}"
+    elsif(platform == :loom)
+      "https://www.loom.com/embed/#{id}"
+    end
   end
 end

@@ -2,6 +2,7 @@
   <label-selector
     :all-labels="allLabels"
     :saved-labels="savedLabels"
+    style="pointer-events:none;"
     @add="addItem"
     @remove="removeItem"
   />

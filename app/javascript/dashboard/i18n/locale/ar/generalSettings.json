@@ -83,7 +83,8 @@
       "conversation_assignment": "تم تعيين المحادثة",
       "assigned_conversation_new_message": "رسالة جديدة",
       "participating_conversation_new_message": "رسالة جديدة",
-      "conversation_mention": "إشارة"
+      "conversation_mention": "إشارة",
+      "article_creation": "مقال جديد"
     }
   },
   "NETWORK": {
@@ -138,7 +139,8 @@
       "SNOOZE_CONVERSATION": "تأجيل المحادثة",
       "UNTIL_NEXT_REPLY": "حتى الرد القادم",
       "UNTIL_NEXT_WEEK": "حتى الأسبوع القادم",
-      "UNTIL_TOMORROW": "حتى الغد"
+      "UNTIL_TOMORROW": "حتى الغد",
+      "OPEN_CONVERSATION": "فتح المحادثة"
     }
   },
   "DASHBOARD_APPS": {

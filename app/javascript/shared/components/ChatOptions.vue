@@ -4,7 +4,19 @@
     :class="$dm('bg-white', 'dark:bg-slate-700')"
   >
     <div class="card-body">
-      <h4 class="title" :class="$dm('text-black-900', 'dark:text-slate-50')">
+      <h4 class="title" :class="$dm('text-black-900', 'dark:text-slate-50')">        
+
+          <div v-if="isImageFile()">
+            <img
+              :src="messageContentAttributes.message_payload.content.image"
+              alt="Picture message"
+            />
+            <br/>
+          </div>
+
+          <file-bubble v-if="isVideoFile()" :url="messageContentAttributes.message_payload.content.video" />
+          <file-bubble v-if="isDocumentFile()" :url="messageContentAttributes.message_payload.content.document" />
+
         {{ title }}
       </h4>
       <ul
@@ -27,10 +39,12 @@
 <script>
 import ChatOption from 'shared/components/ChatOption';
 import darkModeMixin from 'widget/mixins/darkModeMixin.js';
+import FileBubble from 'widget/components/FileBubble';
 
 export default {
   components: {
     ChatOption,
+    FileBubble
   },
   mixins: [darkModeMixin],
   props: {
@@ -50,8 +64,25 @@ export default {
       type: Boolean,
       default: false,
     },
+    messageContentAttributes: {
+      type: Object,
+      default: () => {},
+    },
   },
   methods: {
+
+    isImageFile() {
+      return !!this.messageContentAttributes?.message_payload?.content?.image
+    },
+
+    isVideoFile() {
+      return !!this.messageContentAttributes?.message_payload?.content?.video
+    },
+
+    isDocumentFile() {
+      return !!this.messageContentAttributes?.message_payload?.content?.document
+    },
+
     isSelected(option) {
       return this.selected === option.id;
     },

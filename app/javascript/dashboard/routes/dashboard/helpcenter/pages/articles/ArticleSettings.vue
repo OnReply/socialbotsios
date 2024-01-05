@@ -49,6 +49,19 @@
           />
         </label>
         <label>
+          {{ $t('HELP_CENTER.ARTICLE_SETTINGS.FORM.EMBED_VIDEO_URL.LABEL') }}
+          <input
+            v-model="embedVideoUrl"
+            type="text"
+            :placeholder="
+              $t(
+                'HELP_CENTER.ARTICLE_SETTINGS.FORM.EMBED_VIDEO_URL.PLACEHOLDER'
+              )
+            "
+            @input="onChangeEmbedUrlInput"
+          />
+        </label>
+        <label>
           {{ $t('HELP_CENTER.ARTICLE_SETTINGS.FORM.META_TITLE.LABEL') }}
           <textarea
             v-model="metaTitle"
@@ -140,6 +153,7 @@ export default {
       metaTags: [],
       metaOptions: [],
       tagInputValue: '',
+      embedVideoUrl: '',
     };
   },
   computed: {
@@ -175,6 +189,7 @@ export default {
             description: this.metaDescription,
             tags: this.allTags,
           },
+          video_url: this.embedVideoUrl,
         });
       },
       1000,
@@ -213,11 +228,25 @@ export default {
     onChangeMetaInput() {
       this.saveArticle();
     },
+    onChangeEmbedUrlInput() {
+      this.saveArticle();
+    },
     onClickArchiveArticle() {
       this.$emit('archive-article');
     },
     onClickDeleteArticle() {
       this.$emit('delete-article');
+    },
+    ChangeVideoUrl(url) {
+      this.embedVideoUrl = url;
+    },
+  },
+  watch: {
+    article: {
+      handler(newVal) {
+        this.ChangeVideoUrl(newVal.video_url);
+      },
+      deep: true,
     },
   },
 };

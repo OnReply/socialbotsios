@@ -2,7 +2,7 @@ import types from '../../mutation-types';
 import NotificationsAPI from '../../../api/notifications';
 
 export const actions = {
-  get: async ({ commit }, { page = 1 } = {}) => {
+  get: async ({ commit }, { page = 1} = {}) => {
     commit(types.SET_NOTIFICATIONS_UI_FLAG, { isFetching: true });
     try {
       const {
@@ -34,7 +34,7 @@ export const actions = {
   ) => {
     try {
       await NotificationsAPI.read(primaryActorType, primaryActorId);
-      commit(types.SET_NOTIFICATIONS_UNREAD_COUNT, unreadCount - 1);
+      commit(types.SET_NOTIFICATIONS_UNREAD_COUNT,  unreadCount - 1 );
       commit(types.UPDATE_NOTIFICATION, primaryActorId);
     } catch (error) {
       throw new Error(error);

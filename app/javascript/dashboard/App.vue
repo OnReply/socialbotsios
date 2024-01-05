@@ -5,7 +5,6 @@
     class="app-wrapper app-root"
     :class="{ 'app-rtl--wrapper': isRTLView }"
   >
-    <update-banner :latest-chatwoot-version="latestChatwootVersion" />
     <transition name="fade" mode="out-in">
       <router-view />
     </transition>
@@ -24,7 +23,6 @@ import { mapGetters } from 'vuex';
 import AddAccountModal from '../dashboard/components/layout/sidebarComponents/AddAccountModal';
 import LoadingState from './components/widgets/LoadingState.vue';
 import NetworkNotification from './components/NetworkNotification';
-import UpdateBanner from './components/app/UpdateBanner.vue';
 import vueActionCable from './helper/actionCable';
 import WootSnackbarBox from './components/SnackbarContainer';
 import rtlMixin from 'shared/mixins/rtlMixin';
@@ -32,6 +30,7 @@ import {
   registerSubscription,
   verifyServiceWorkerExistence,
 } from './helper/pushHelper';
+import { refreshToken } from './store/modules/conversations/helpers/tokenRefresh';
 
 export default {
   name: 'App',
@@ -40,7 +39,6 @@ export default {
     AddAccountModal,
     LoadingState,
     NetworkNotification,
-    UpdateBanner,
     WootSnackbarBox,
   },
 
@@ -76,6 +74,7 @@ export default {
     currentAccountId() {
       if (this.currentAccountId) {
         this.initializeAccount();
+        refreshToken(this.currentAccountId);
       }
     },
   },
@@ -91,14 +90,10 @@ export default {
       this.$store.dispatch('setActiveAccount', {
         accountId: this.currentAccountId,
       });
-      const {
-        locale,
-        latest_chatwoot_version: latestChatwootVersion,
-      } = this.getAccount(this.currentAccountId);
+      const { locale } = this.getAccount(this.currentAccountId);
       const { pubsub_token: pubsubToken } = this.currentUser || {};
       this.setLocale(locale);
       this.updateRTLDirectionView(locale);
-      this.latestChatwootVersion = latestChatwootVersion;
       vueActionCable.init(pubsubToken);
 
       verifyServiceWorkerExistence(registration =>
@@ -115,11 +110,6 @@ export default {
 
 <style lang="scss">
 @import './assets/scss/app';
-.update-banner {
-  height: var(--space-larger);
-  align-items: center;
-  font-size: var(--font-size-small) !important;
-}
 </style>
 
 <style src="vue-multiselect/dist/vue-multiselect.min.css"></style>

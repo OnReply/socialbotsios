@@ -17,6 +17,10 @@ class ActionService
     @conversation.resolved!
   end
 
+  def open_conversation(_params)
+    @conversation.open!
+  end
+
   def change_status(status)
     @conversation.update!(status: status[0])
   end
@@ -64,6 +68,41 @@ class ActionService
       email = parse_email_variables(@conversation, email)
       ConversationReplyMailer.with(account: @conversation.account).conversation_transcript(@conversation, email)&.deliver_later
     end
+  end
+
+  def send_whatsapp_template(_params)
+    uploaded_file = nil
+    if @rule.image.attached?
+      image = Tempfile.new(["copy_", ".#{@rule.image.filename.extension}"])
+      image.binmode
+      image.write(@rule.image.download)
+      image.close
+      uploaded_file = ActionDispatch::Http::UploadedFile.new(
+        tempfile: image,
+        filename: 'copy.png',   # Provide a desired filename
+        type: @rule.image.blob.content_type       # Provide the actual content type
+      )
+    end
+    data = JSON.parse(_params.first)
+    params = ActionController::Parameters.new(
+      "content" => data["message"],
+      "image" => uploaded_file,
+      "template_params" => {
+        "name" => data["templateParams"]["name"],
+        "category" => data["templateParams"]["category"],
+        "language" => data["templateParams"]["language"],
+        "processed_params" => data["templateParams"]["processed_params"],
+        "namespace" => "undefined"
+      },
+      "format" => "json",
+      "controller" => "api/v1/accounts/conversations/messages",
+      "action" => "create",
+      "account_id" => @conversation.account_id,
+      "conversation_id" => @conversation.id,
+      "sender_type" => "AgentBot"
+    )
+    mb = Messages::MessageBuilder.new(nil, @conversation, params)
+    @message = mb.perform
   end
 
   private

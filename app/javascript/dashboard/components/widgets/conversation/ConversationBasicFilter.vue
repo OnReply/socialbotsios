@@ -13,6 +13,7 @@
       v-if="showActionsDropdown"
       v-on-clickaway="closeDropdown"
       class="dropdown-pane dropdown-pane--open basic-filter"
+      :class="direction"
     >
       <div class="filter__item">
         <span>{{ this.$t('CHAT_LIST.CHAT_SORT.STATUS') }}</span>
@@ -54,12 +55,15 @@ export default {
       showActionsDropdown: false,
       chatStatusItems: this.$t('CHAT_LIST.CHAT_STATUS_FILTER_ITEMS'),
       chatSortItems: this.$t('CHAT_LIST.CHAT_SORT_FILTER_ITEMS'),
+      direction: "ltr"
     };
   },
   computed: {
     ...mapGetters({
       chatStatusFilter: 'getChatStatusFilter',
       chatSortFilter: 'getChatSortFilter',
+      getAccount: 'accounts/getAccount',
+      currentAccountId: 'getCurrentAccountId',
     }),
     chatStatus() {
       return this.chatStatusFilter || wootConstants.STATUS_TYPE.OPEN;
@@ -74,6 +78,7 @@ export default {
       this.closeDropdown();
     },
     toggleDropdown() {
+      this.direction = new Intl.Locale(this.getAccount(this.currentAccountId).locale).textInfo.direction
       this.showActionsDropdown = !this.showActionsDropdown;
     },
     closeDropdown() {
@@ -89,7 +94,6 @@ export default {
 .basic-filter {
   margin-top: var(--space-smaller);
   padding: var(--space-normal);
-  right: 0;
   width: 21rem;
 
   span {
@@ -111,7 +115,13 @@ export default {
     }
   }
 }
+.ltr {
+  right: 0;
+}
 
+.rtl {
+  left: 0;
+}
 .icon {
   margin-right: var(--space-smaller);
 }

@@ -23,7 +23,8 @@ class Whatsapp::SendOnWhatsappService < Base::SendOnChannelService
                                          name: name,
                                          namespace: namespace,
                                          lang_code: lang_code,
-                                         parameters: processed_parameters
+                                         parameters: processed_parameters,
+                                         image_url: get_image_url
                                        })
     message.update!(source_id: message_id) if message_id.present?
   end
@@ -98,5 +99,10 @@ class Whatsapp::SendOnWhatsappService < Base::SendOnChannelService
 
   def template_params
     message.additional_attributes && message.additional_attributes['template_params']
+  end
+
+  def get_image_url
+    return nil unless message.image.attached?
+    Rails.application.routes.url_helpers.rails_blob_url(message.image)
   end
 end

@@ -23,6 +23,10 @@ class Api::V1::Accounts::CallbacksController < Api::V1::Accounts::BaseController
     @page_details = mark_already_existing_facebook_pages(fb_object.get_connections('me', 'accounts'))
   end
 
+  def facebook_tokens
+    @tokens = Current.account.whatsapp_channels.where(provider: 'whatsapp_cloud').where("provider_config->>'refreshed_at' IS NULL OR to_timestamp(provider_config->>'refreshed_at', 'YYYY-MM-DDTHH24:MI:SS.MS') < (timezone('utc', NOW()) - interval '1 day')").map {|m| {id: m.inbox.id, key:m.provider_config['api_key']}}
+  end
+
   def set_instagram_id(page_access_token, facebook_channel)
     fb_object = Koala::Facebook::API.new(page_access_token)
     response = fb_object.get_connections('me', '', { fields: 'instagram_business_account' })

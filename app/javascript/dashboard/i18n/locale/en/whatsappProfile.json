@@ -1,0 +1,27 @@
+{
+  "WHATSAPP_PROFILE": {
+    "DESCRIPTION": {
+      "LABEL": "Description",
+      "PLACEHOLDER": "Type description of your whatsapp profile (Optional)"
+    },
+    "ADDRESS": {
+      "LABEL": "Address",
+      "PLACEHOLDER": "Type address for your business (Optional)"
+    },
+    "EMAIL": {
+      "LABEL": "Email",
+      "PLACEHOLDER": "Type Email for your business (Optional)"
+    },
+    "ABOUT": {
+      "LABEL": "About",
+      "PLACEHOLDER": "Enter about for your business"
+    },
+    "WEBSITE": {
+      "LABEL": "Website",
+      "PLACEHOLDER": "Enter about for your business (Optional)"
+    },
+    "PROFILE_PICTURE": {
+      "LABEL": "Profile Picture"
+    }
+  }
+}

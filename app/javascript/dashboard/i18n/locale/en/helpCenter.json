@@ -67,12 +67,24 @@
         "META_TAGS": {
           "LABEL": "Meta tags",
           "PLACEHOLDER": "Add meta tags separated by comma..."
+        },
+        "EMBED_VIDEO_URL": {
+          "LABEL": "Video URL",
+          "PLACEHOLDER": "Add the Link of video you want to embed to article"
         }
       },
       "BUTTONS": {
         "ARCHIVE": "Archive article",
         "DELETE": "Delete article"
       }
+    },
+    "ARTICLE_SEARCH_RESULT": {
+      "UNCATEGORIZED": "Uncategorized",
+      "INSERT_ARTICLE": "Insert",
+      "NO_RESULT": "No articles found",
+      "COPY_LINK": "Copy article link to clipboard",
+      "OPEN_LINK": "Open article in new tab",
+      "PREVIEW_LINK": "Preview article"
     },
     "PORTAL": {
       "HEADER": "Portals",

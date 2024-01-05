@@ -1,7 +1,8 @@
 <template>
-  <div class="reply-box" :class="replyBoxClass">
+  <div class="reply-box" :class="replyBoxClass" v-if="currentChat.can_reply">
     <banner
       v-if="showSelfAssignBanner"
+      action-button-variant="link"
       color-scheme="secondary"
       :banner-message="$t('CONVERSATION.NOT_ASSIGNED_TO_YOU')"
       :has-action-button="true"
@@ -137,6 +138,83 @@
       ref="confirmDialog"
       :title="$t('CONVERSATION.REPLYBOX.UNDEFINED_VARIABLES.TITLE')"
       :description="undefinedVariableMessage"
+    />
+  </div>
+  <div class="reply-box" v-else>
+    <reply-top-panel
+      :mode="replyType"
+      :set-reply-mode="setReplyMode"
+      :is-message-length-reaching-threshold="isMessageLengthReachingThreshold"
+      :characters-remaining="charactersRemaining"
+      :popout-reply-box="popoutReplyBox"
+      @click="$emit('click')"
+    />
+    <woot-message-editor
+      v-if="replyType === 'NOTE'"
+      v-model="message"
+      :editor-id="editorStateId"
+      class="input"
+      :is-private="isOnPrivateNote"
+      :placeholder="messagePlaceHolder"
+      :update-selection-with="updateEditorSelectionWith"
+      :min-height="4"
+      :enable-variables="true"
+      :variables="messageVariables"
+      @typing-off="onTypingOff"
+      @typing-on="onTypingOn"
+      @focus="onFocus"
+      @blur="onBlur"
+      @toggle-user-mention="toggleUserMention"
+      @toggle-canned-menu="toggleCannedMenu"
+      @toggle-variables-menu="toggleVariablesMenu"
+      @clear-selection="clearEditorSelection"
+    />
+    <woot-button
+      v-else-if="hasWhatsappTemplates"
+      v-tooltip.top-end="'Whatsapp Templates'"
+      icon="whatsapp"
+      color-scheme="secondary"
+      variant="smooth"
+      size="small"
+      :title="'Whatsapp Templates'"
+      class="start-conversation"
+      @click="openWhatsappTemplateModal"
+    >
+      To start conversation send Template
+    </woot-button>
+    <reply-bottom-panel
+      v-if="replyType == 'NOTE'"
+      :conversation-id="conversationId"
+      :enable-multiple-file-upload="enableMultipleFileUpload"
+      :has-whatsapp-templates="hasWhatsappTemplates"
+      :inbox="inbox"
+      :is-on-private-note="isOnPrivateNote"
+      :is-recording-audio="isRecordingAudio"
+      :is-send-disabled="isReplyButtonDisabled"
+      :mode="replyType"
+      :on-file-upload="onFileUpload"
+      :on-send="onSendReply"
+      :recording-audio-duration-text="recordingAudioDurationText"
+      :recording-audio-state="recordingAudioState"
+      :send-button-text="replyButtonLabel"
+      :show-audio-recorder="showAudioRecorder"
+      :show-editor-toggle="isAPIInbox && !isOnPrivateNote"
+      :show-emoji-picker="showEmojiPicker"
+      :show-file-upload="showFileUpload"
+      :toggle-audio-recorder-play-pause="toggleAudioRecorderPlayPause"
+      :toggle-audio-recorder="toggleAudioRecorder"
+      :toggle-emoji-picker="toggleEmojiPicker"
+      :message="message"
+      @selectWhatsappTemplate="openWhatsappTemplateModal"
+      @toggle-editor="toggleRichContentEditor"
+      @replace-text="replaceText"
+    />
+    <whatsapp-templates
+      :inbox-id="inbox.id"
+      :show="showWhatsAppTemplatesModal"
+      @close="hideWhatsappTemplatesModal"
+      @on-send="onSendWhatsAppReply"
+      @cancel="hideWhatsappTemplatesModal"
     />
   </div>
 </template>
@@ -501,7 +579,7 @@ export default {
       return `draft-${this.conversationIdByRoute}-${this.replyType}`;
     },
     audioRecordFormat() {
-      if (this.isAWhatsAppChannel) {
+      if (this.isAWhatsAppChannel || this.isAPIInbox) {
         return AUDIO_FORMATS.OGG;
       }
       return AUDIO_FORMATS.WAV;
@@ -662,13 +740,14 @@ export default {
       );
     },
     onPaste(e) {
-      const data = e.clipboardData.files;
+      var data = e.clipboardData.files;
       if (!this.showRichContentEditor && data.length !== 0) {
         this.$refs.messageInput.$el.blur();
       }
       if (!data.length || !data[0]) {
         return;
       }
+      data = Array.from(data)
       data.forEach(file => {
         const { name, type, size } = file;
         this.onFileUpload({ name, type, size, file: file });
@@ -1173,5 +1252,9 @@ export default {
 .normal-editor__canned-box {
   width: calc(100% - 2 * var(--space-normal));
   left: var(--space-normal);
+}
+.start-conversation {
+  display: flex;
+  margin: 1rem auto !important;
 }
 </style>

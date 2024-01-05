@@ -58,3 +58,7 @@ export const updateSingleRecordPresence = (
 export const destroy = (state, id) => {
   state.records = state.records.filter(record => record.id !== id);
 };
+
+export const setTemplates = (state, data) => {
+  state.templates = data;
+};

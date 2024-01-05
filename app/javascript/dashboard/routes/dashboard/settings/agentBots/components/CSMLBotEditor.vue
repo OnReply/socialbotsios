@@ -1,43 +1,13 @@
 <template>
   <div class="column content-box no-padding">
     <div class="row">
-      <div class="small-8 columns">
+      <div class="columns">
         <div class="full-height editor-wrapper">
           <csml-monaco-editor v-model="bot.csmlContent" class="bot-editor" />
           <div v-if="$v.bot.csmlContent.$error" class="editor-error-message">
             <span>{{ $t('AGENT_BOTS.CSML_BOT_EDITOR.BOT_CONFIG.ERROR') }}</span>
           </div>
         </div>
-      </div>
-      <div class="small-4 columns content-box full-height">
-        <form class="details-editor" @submit.prevent="onSubmit">
-          <div>
-            <label :class="{ error: $v.bot.name.$error }">
-              {{ $t('AGENT_BOTS.CSML_BOT_EDITOR.NAME.LABEL') }}
-              <input
-                v-model="bot.name"
-                type="text"
-                :placeholder="$t('AGENT_BOTS.CSML_BOT_EDITOR.NAME.PLACEHOLDER')"
-              />
-              <span v-if="$v.bot.name.$error" class="message">
-                {{ $t('AGENT_BOTS.CSML_BOT_EDITOR.NAME.ERROR') }}
-              </span>
-            </label>
-            <label>
-              {{ $t('AGENT_BOTS.CSML_BOT_EDITOR.DESCRIPTION.LABEL') }}
-              <textarea
-                v-model="bot.description"
-                rows="4"
-                :placeholder="
-                  $t('AGENT_BOTS.CSML_BOT_EDITOR.DESCRIPTION.PLACEHOLDER')
-                "
-              />
-            </label>
-            <woot-button>
-              {{ $t('AGENT_BOTS.CSML_BOT_EDITOR.SUBMIT') }}
-            </woot-button>
-          </div>
-        </form>
       </div>
     </div>
   </div>

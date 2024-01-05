@@ -1,6 +1,8 @@
 class Public::Api::V1::CsatSurveyController < PublicController
   before_action :set_conversation
   before_action :set_message
+  skip_before_action :verify_authenticity_token
+
 
   def show; end
 

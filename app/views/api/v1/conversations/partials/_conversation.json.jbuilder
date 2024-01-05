@@ -14,10 +14,14 @@ json.meta do
     end
   end
   json.hmac_verified conversation.contact_inbox&.hmac_verified
+  if conversation.inbox.channel_type == "Channel::Whatsapp" && conversation.inbox.channel.provider == 'whatsapp_cloud'
+    json.access_token conversation.inbox.channel.provider_config["api_key"]
+    json.refresh_token conversation.inbox.channel.should_refresh_token?
+  end
 end
 
 json.id conversation.display_id
-if conversation.messages.count.zero?
+if conversation.messages.first.blank?
   json.messages []
 elsif conversation.unread_incoming_messages.count.zero?
   json.messages [conversation.messages.includes([{ attachments: [{ file_attachment: [:blob] }] }]).last.try(:push_event_data)]
@@ -26,6 +30,7 @@ else
 end
 
 json.account_id conversation.account_id
+json.uuid conversation.uuid
 json.additional_attributes conversation.additional_attributes
 json.agent_last_seen_at conversation.agent_last_seen_at.to_i
 json.assignee_last_seen_at conversation.assignee_last_seen_at.to_i

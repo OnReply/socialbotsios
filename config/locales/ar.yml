@@ -99,6 +99,7 @@ ar:
       conversation_assignment: "[تعيين لك] - #%{display_id} تم تعيينه لك"
       assigned_conversation_new_message: "[رسالة جديدة] - #%{display_id} %{content}"
       conversation_mention: "تمت الإشارة إليك في المحادثة [ID - %{display_id}] من قبل %{name}"
+      article_creation: 'تم إنشاء مقال جديد في البوابة "٪ {name}"'
   conversations:
     messages:
       instagram_story_content: "أشار %{story_sender} إليك في القصة: "

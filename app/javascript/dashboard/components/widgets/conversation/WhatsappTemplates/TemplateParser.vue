@@ -29,12 +29,24 @@
         {{ $t('WHATSAPP_TEMPLATES.PARSER.FORM_ERROR_MESSAGE') }}
       </p>
     </div>
+    <div v-if="image" class="template__variables-container">
+      <input
+        id="file"
+        ref="file"
+        type="file"
+        accept="image/png, image/jpeg"
+        @change="handleImageUpload"
+      />
+      <p v-if="$v.$dirty && $v.$invalid" class="error">
+        {{ $t('WHATSAPP_TEMPLATES.PARSER.ATTACH_IMAGE_ERROR') }}
+      </p>
+    </div>
     <footer>
       <woot-button variant="smooth" @click="$emit('resetTemplate')">
         {{ $t('WHATSAPP_TEMPLATES.PARSER.GO_BACK_LABEL') }}
       </woot-button>
       <woot-button @click="sendMessage">
-        {{ $t('WHATSAPP_TEMPLATES.PARSER.SEND_MESSAGE_LABEL') }}
+        {{ buttonText == 'automation'?  $t('WHATSAPP_TEMPLATES.PARSER.SELECT_TEMPLATE') : $t('WHATSAPP_TEMPLATES.PARSER.SEND_MESSAGE_LABEL') }}
       </woot-button>
     </footer>
   </div>
@@ -52,16 +64,26 @@ export default {
       type: Object,
       default: () => {},
     },
+    buttonText: {
+      type: String,
+      default: 'conversation'
+    }
   },
   validations: {
     processedParams: {
       requiredIfKeysPresent: requiredIf('variables'),
       allKeysRequired,
     },
+    imageFile: {
+     required: requiredIf(function() {
+        return this.image
+      })
+    }
   },
   data() {
     return {
       processedParams: {},
+      imageFile: null,
     };
   },
   computed: {
@@ -80,6 +102,12 @@ export default {
         return this.processedParams[variableKey] || `{{${variable}}}`;
       });
     },
+    image() {
+      const headerComponent = this.template.components.find(
+        component => component.type === 'HEADER'
+      );
+      return headerComponent && headerComponent.format === "IMAGE";
+    }
   },
   mounted() {
     this.generateVariables();
@@ -97,8 +125,14 @@ export default {
           namespace: this.template.namespace,
           processed_params: this.processedParams,
         },
+        image: this.imageFile
       };
       this.$emit('sendMessage', payload);
+    },
+    async handleImageUpload(event) {
+      const [file] = event.target.files;
+      this.imageFile = file;
+      // this.imageUrl = file? URL.createObjectURL(file) : '';
     },
     processVariable(str) {
       return str.replace(/{{|}}/g, '');

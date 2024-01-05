@@ -2,7 +2,10 @@
 # One of the specs is failing when I tried doing that, lets revisit in future
 class PublicController < ActionController::Base
   include RequestExceptionHandler
-  skip_before_action :verify_authenticity_token
+
+  def unauthorized
+    @image_url = GlobalConfig.get("UNAUTHORIZED_IMAGE_URL").values.first
+  end
 
   private
 

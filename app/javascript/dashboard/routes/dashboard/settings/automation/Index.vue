@@ -186,6 +186,12 @@ export default {
       this.showAddPopup = false;
     },
     openEditPopup(response) {
+      response.actions = response.actions.map(action => {
+        if (action.action_name === 'send_whatsapp_template') {
+          return { ...action, action_params: [] };
+        }
+        return action;
+      });
       this.selectedResponse = response;
       this.showEditPopup = true;
     },
@@ -223,8 +229,9 @@ export default {
         this.showAlert(this.$t('AUTOMATION.CLONE.API.ERROR_MESSAGE'));
       }
     },
-    async submitAutomation(payload, mode) {
+    async submitAutomation(payload, mode, image) {
       try {
+        payload["image"] = image
         const action =
           mode === 'edit' ? 'automations/update' : 'automations/create';
         const successMessage =
