@@ -1,6 +1,6 @@
 # Variables
-APP_NAME := chatwoot
-RAILS_ENV ?= development
+APP_NAME := bloggershivam/chatwoot:arm64
+RAILS_ENV ?= production
 
 # Targets
 setup:
@@ -50,6 +50,6 @@ debug_worker:
 	overmind connect worker
 
 docker: 
-	docker build -t $(APP_NAME) -f ./docker/Dockerfile .
+	docker build --platform linux/amd64 -t $(APP_NAME) -f ./docker/Dockerfile .
 
 .PHONY: setup db_create db_migrate db_seed db_reset db console server burn docker run force_run debug debug_worker
