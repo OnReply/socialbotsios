@@ -6,7 +6,8 @@ module ConversationReplyMailerHelper
       reply_to: email_reply_to,
       subject: mail_subject,
       message_id: custom_message_id,
-      in_reply_to: in_reply_to_email
+      in_reply_to: in_reply_to_email,
+      references: references_email
     }
 
     if cc_bcc_enabled
@@ -101,5 +102,30 @@ module ConversationReplyMailerHelper
 
     email = @inbox.channel.try(:email)
     email.present? ? email.split('@').last : raise(StandardError, 'Channel email domain not present.')
+  end
+
+  # Build the References header for proper email threading
+  # This should include all previous message IDs in the conversation
+  def references_email
+    # Start with the conversation reference ID
+    refs = ["<account/#{@account.id}/conversation/#{@conversation.uuid}@#{channel_email_domain}>"]
+
+    # Add the in-reply-to ID if it exists and is not already in the references
+    in_reply_to = in_reply_to_email
+    refs << in_reply_to if in_reply_to.present? && !refs.include?(in_reply_to)
+
+    # Add message IDs from previous messages in the conversation
+    # Get the last 5 messages with source_id to avoid making the header too long
+    @conversation.messages.where.not(source_id: nil).order(created_at: :desc).limit(5).each do |msg|
+      source_id = msg.source_id
+      # Ensure the source_id is properly formatted with angle brackets
+      msg_id = source_id.start_with?('<') && source_id.end_with?('>') ? source_id : "<#{source_id}>"
+      refs << msg_id unless refs.include?(msg_id)
+    end
+
+    # Format the references according to RFC 5322
+    # Each reference should be on a new line with proper indentation for better readability
+    # and to avoid issues with long headers
+    refs.join("\n ")
   end
 end

@@ -139,7 +139,7 @@ class Messages::MessageBuilder
   end
 
   def message_params
-    {
+    params = {
       account_id: @conversation.account_id,
       inbox_id: @conversation.inbox_id,
       message_type: message_type,
@@ -151,6 +151,18 @@ class Messages::MessageBuilder
       in_reply_to: @in_reply_to,
       echo_id: @params[:echo_id],
       source_id: @params[:source_id]
-    }.merge(external_created_at).merge(automation_rule_id).merge(campaign_id).merge(template_params)
+    }
+
+    # If this is an email message and has a message_id in content_attributes, use it as source_id
+    if @params[:content_attributes].is_a?(Hash) &&
+       @params[:content_attributes][:email].is_a?(Hash) &&
+       @params[:content_attributes][:email][:message_id].present?
+      params[:source_id] = @params[:content_attributes][:email][:message_id]
+    end
+
+    params.merge(external_created_at)
+          .merge(automation_rule_id)
+          .merge(campaign_id)
+          .merge(template_params)
   end
 end

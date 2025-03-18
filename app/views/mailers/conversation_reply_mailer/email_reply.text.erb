@@ -1,0 +1,36 @@
+<% if @message.content %>
+<%= @message.content %>
+<% end %>
+<% if @message.attachments.present? %>
+<% @message.attachments.each do |attachment| %>
+attachment [<%= attachment.file_url %>]
+<% end %>
+<% end %>
+
+<% # NOTE: Do not increase the message limit beyond 5 in the controller. %>
+<% # Increasing the limit can cause issues with email delivery and proper quoted format. %>
+<% if @conversation.inbox&.inbox_type == 'Email' && @previous_messages.present? %>
+<% first_message = @previous_messages.first %>
+<% sender_name = first_message.sender&.try(:available_name) || first_message.sender&.name || 'Unknown' %>
+<% channel_email = @channel.try(:email) || @inbox.email_address || @account.support_email %>
+<% message_date = first_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
+
+On <%= message_date %>, <%= sender_name %> <<%= channel_email %>> wrote:
+<% @previous_messages.each_with_index do |prev_message, index| %>
+<% if index > 0 %>
+<% sender_name = prev_message.sender&.try(:available_name) || prev_message.sender&.name || 'Unknown' %>
+<% message_date = prev_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
+> On <%= message_date %>, <%= sender_name %> <<%= channel_email %>> wrote:
+<% end %>
+<% indent = index > 0 ? '>' * (index + 1) + ' ' : '> ' %>
+<% prev_message.content.to_s.split("\n").each do |line| %>
+<%= indent %><%= line %>
+<% end %>
+<% if prev_message.attachments.present? %>
+<% prev_message.attachments.each do |attachment| %>
+<%= indent %>attachment [<%= attachment.file_url %>]
+<% end %>
+<% end %>
+
+<% end %>
+<% end %> 

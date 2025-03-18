@@ -34,8 +34,38 @@ class ConversationReplyMailer < ApplicationMailer
 
     init_conversation_attributes(message.conversation)
     @message = message
+
+    # Set up email history for email channels
+    if @inbox.inbox_type == 'Email'
+      # Make sure we have access to previous messages for the template
+      # Order by created_at DESC to get the most recent messages first
+      # Limit to 5 messages to ensure reliable email delivery and proper quoted format
+      # Going beyond 5 messages can cause issues with email delivery and formatting
+      @previous_messages = @conversation.messages.chat
+                                        .where.not(id: @message.id)
+                                        .where(message_type: [:incoming, :outgoing])
+                                        .order(created_at: :desc)
+                                        .limit(8) # Keep this at 5 for reliable email delivery
+
+      # Don't strip HTML tags as we want to preserve the original format
+      # Just ensure the content is properly formatted
+      @previous_messages.each do |prev_msg|
+        # Ensure content is not nil
+        prev_msg.content = prev_msg.content.to_s
+
+        # Truncate very long messages to prevent email delivery issues
+        prev_msg.content = prev_msg.content[0..9997] + '...' if prev_msg.content.length > 10_000
+      end
+    end
+
     reply_mail_object = prepare_mail(true)
-    message.update(source_id: reply_mail_object.message_id)
+
+    # Extract the message_id without angle brackets for storage
+    message_id = reply_mail_object.message_id
+    message_id = message_id[1..-2] if message_id.start_with?('<') && message_id.end_with?('>')
+
+    # Update the message with the source_id
+    message.update(source_id: message_id)
   end
 
   def conversation_transcript(conversation, to_email)
@@ -147,8 +177,15 @@ class ConversationReplyMailer < ApplicationMailer
 
   def custom_message_id
     last_message = @message || @messages&.last
+    message_id = nil
 
-    "<conversation/#{@conversation.uuid}/messages/#{last_message&.id}@#{channel_email_domain}>"
+    if last_message&.id
+      # Create a unique message ID that includes the conversation UUID and message ID
+      "<conversation/#{@conversation.uuid}/messages/#{last_message.id}/#{Time.now.to_i}@#{channel_email_domain}>"
+    else
+      # Fallback to a generic message ID if no message is available
+      "<conversation/#{@conversation.uuid}/#{Time.now.to_i}@#{channel_email_domain}>"
+    end
   end
 
   def in_reply_to_email
@@ -156,10 +193,20 @@ class ConversationReplyMailer < ApplicationMailer
   end
 
   def conversation_reply_email_id
+    # Try to get the message_id from the last incoming message
     content_attributes = @conversation.messages.incoming.last&.content_attributes
 
     if content_attributes && content_attributes['email'] && content_attributes['email']['message_id']
-      return "<#{content_attributes['email']['message_id']}>"
+      message_id = content_attributes['email']['message_id']
+      # Ensure the message_id is properly formatted with angle brackets
+      return message_id.start_with?('<') && message_id.end_with?('>') ? message_id : "<#{message_id}>"
+    end
+
+    # If no incoming message with message_id is found, try to use the source_id from the last message
+    last_message_with_source = @conversation.messages.where.not(source_id: nil).last
+    if last_message_with_source.present?
+      source_id = last_message_with_source.source_id
+      return source_id.start_with?('<') && source_id.end_with?('>') ? source_id : "<#{source_id}>"
     end
 
     nil
