@@ -23,6 +23,63 @@ module ConversationReplyMailerHelper
     mail(@options)
   end
 
+  # Get the correct sender email for a message depending on its type (incoming/outgoing)
+  def get_sender_email(message)
+    if message.message_type == 'incoming'
+      # For incoming messages, use the sender's email (typically contact)
+      message.sender&.email || @contact&.email || 'unknown@example.com'
+    else
+      # For outgoing messages, use the sender's email (agent) or inbox email
+      message.sender&.email || @inbox&.email_address || @channel&.try(:email) || @account&.support_email || 'support@example.com'
+    end
+  end
+
+  # Check if the message content already contains email quote formatting
+  # Looks for common patterns like blockquotes or "On ... wrote:" text
+  def message_has_quote?(content)
+    return false if content.blank?
+
+    # Check for HTML blockquote tags
+    html_quote = content.include?('<blockquote')
+
+    # Check for common email reply patterns
+    # Gmail style pattern: "On Wed, Mar 19, 2025 at 12:11 PM, Name <email> wrote:"
+    gmail_quote = content.match?(/On\s+\w+,\s+\w+\s+\d+,\s+\d{4}(?:\s+at)?\s+[\d:]+\s+(?:[AP]M)?,?\s+[\w\s]+\s+<[\w@.]+>\s+wrote:/)
+
+    # Alternative Gmail style
+    alt_gmail_quote = content.match?(/On\s+[\w\s,]+\s+at\s+[\d:]+\s+[AP]M,?\s+[\w\s]+\s+<[\w@.]+>\s+wrote:/)
+
+    # Email client separator lines
+    separator_line = content.include?('------------------------------') ||
+                     content.include?('________________________________') ||
+                     content.include?('===============================') ||
+                     content.include?('------ Original Message ------') ||
+                     content.include?('‐‐‐‐‐‐‐ Original Message ‐‐‐‐‐‐‐')
+
+    # Outlook style headers
+    outlook_quote = content.match?(/From:[\s\w<>@.]+Sent:[\s\w,:]+To:[\s\w<>@.]+(?:Cc:[\s\w<>@.]+)?Subject:/)
+
+    # Check for multiple quoted messages (duplicate history)
+    # This pattern looks for 2+ occurrences of "On ... wrote:" which indicates nested quotes
+    multiple_quotes = content.scan(/On\s+\w+,\s+\w+\s+\d+,\s+\d{4}/).length > 1
+
+    # Gmail conversation style with dashed separator and date stamp
+    gmail_thread_format = content.match?(/-{2,}.*?(\*.*?\*.*?\|.*?Mar \d+, \d{4})/)
+
+    # Modern Gmail with ">" quotation markers
+    gmail_quote_markers = content.scan(/^>/).count > 3
+
+    # Check for gmail formatting markers
+    gmail_format_markers = content.include?('------------------------------ ') &&
+                           (content.include?('| Mar') || content.include?('|Mar')) &&
+                           content.include?('>')
+
+    # Return true if any pattern is found
+    html_quote || gmail_quote || alt_gmail_quote || outlook_quote ||
+      separator_line || multiple_quotes || gmail_format_markers ||
+      gmail_thread_format || gmail_quote_markers
+  end
+
   private
 
   def google_smtp_settings

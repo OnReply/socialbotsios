@@ -18,6 +18,7 @@ class Messages::MessageBuilder
 
   def perform
     @message = @conversation.messages.build(message_params)
+    clean_email_content if @conversation.inbox&.inbox_type == 'Email'
     process_attachments
     process_emails
     @message.save!
@@ -164,5 +165,44 @@ class Messages::MessageBuilder
           .merge(automation_rule_id)
           .merge(campaign_id)
           .merge(template_params)
+  end
+
+  # Cleans up email content from nested history before storing
+  def clean_email_content
+    return unless @message.content.present?
+
+    # Only process incoming email messages
+    return unless @conversation.inbox&.inbox_type == 'Email' && @message.message_type == 'incoming'
+
+    original_content = @message.content.to_s
+
+    # Log original content for debugging
+    Rails.logger.debug { "Original email content: #{original_content[0..100]}..." }
+
+    # Step 1: Remove lines starting with '>' (quoted text)
+    content = original_content.gsub(/^>.*$/m, '')
+
+    # Step 2: Remove "On ... wrote:" patterns and everything after
+    on_wrote_match = content.match(/On\s+.*wrote:/m)
+    content = content[0...on_wrote_match.begin(0)] if on_wrote_match
+
+    # Step 3: Also check for the specific pattern "Hi, I got it. On Wed, 19 Mar 2025..."
+    period_match = content.match(/(.+?)\.\s+On\s+/m)
+    content = period_match[1] + '.' if period_match
+
+    # Step 4: Remove any HTML blockquotes and Gmail quote divs
+    content = content.gsub(%r{<blockquote.*?</blockquote>}m, '')
+    content = content.gsub(%r{<div class="gmail_quote".*?</div>}m, '')
+
+    # Clean up the result
+    content = content.strip
+
+    # Only update if we've successfully cleaned the content
+    if content.present?
+      @message.content = content
+      Rails.logger.debug { "Cleaned email content: #{content}" }
+    else
+      Rails.logger.debug { 'Cleaning produced empty content, keeping original' }
+    end
   end
 end

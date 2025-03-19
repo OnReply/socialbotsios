@@ -12,15 +12,16 @@ attachment [<%= attachment.file_url %>]
 <% if @conversation.inbox&.inbox_type == 'Email' && @previous_messages.present? %>
 <% first_message = @previous_messages.first %>
 <% sender_name = first_message.sender&.try(:available_name) || first_message.sender&.name || 'Unknown' %>
-<% channel_email = @channel.try(:email) || @inbox.email_address || @account.support_email %>
+<% sender_email = get_sender_email(first_message) %>
 <% message_date = first_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
 
-On <%= message_date %>, <%= sender_name %> <<%= channel_email %>> wrote:
+On <%= message_date %>, <%= sender_name %> <<%= sender_email %>> wrote:
 <% @previous_messages.each_with_index do |prev_message, index| %>
 <% if index > 0 %>
 <% sender_name = prev_message.sender&.try(:available_name) || prev_message.sender&.name || 'Unknown' %>
+<% sender_email = get_sender_email(prev_message) %>
 <% message_date = prev_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
-> On <%= message_date %>, <%= sender_name %> <<%= channel_email %>> wrote:
+> On <%= message_date %>, <%= sender_name %> <<%= sender_email %>> wrote:
 <% end %>
 <% indent = index > 0 ? '>' * (index + 1) + ' ' : '> ' %>
 <% prev_message.content.to_s.split("\n").each do |line| %>

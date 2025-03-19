@@ -35,28 +35,64 @@ class ConversationReplyMailer < ApplicationMailer
     init_conversation_attributes(message.conversation)
     @message = message
 
-    # Set up email history for email channels
-    if @inbox.inbox_type == 'Email'
-      # Make sure we have access to previous messages for the template
-      # Order by created_at DESC to get the most recent messages first
-      # Limit to 5 messages to ensure reliable email delivery and proper quoted format
-      # Going beyond 5 messages can cause issues with email delivery and formatting
+    # Log message information for debugging
+    Rails.logger.debug { "Processing email reply for message ID: #{@message.id}" }
+
+    # Check if the message already contains quote formatting
+    has_existing_history = message_has_quote?(@message.content.to_s)
+    Rails.logger.debug { "Message has existing history: #{has_existing_history}" }
+
+    # Set up email history for email channels, but only if the message doesn't already have quotes
+    if @inbox.inbox_type == 'Email' && !has_existing_history
+      # Get previous messages in reverse chronological order (most recent first)
       @previous_messages = @conversation.messages.chat
                                         .where.not(id: @message.id)
                                         .where(message_type: [:incoming, :outgoing])
                                         .order(created_at: :desc)
-                                        .limit(8) # Keep this at 5 for reliable email delivery
+                                        .limit(10) # Keep this at 5 for reliable email delivery
 
-      # Don't strip HTML tags as we want to preserve the original format
-      # Just ensure the content is properly formatted
+      Rails.logger.debug { "Added #{@previous_messages.size} previous messages to the email history" }
+
+      # Only clean/process incoming messages to remove quoted parts
       @previous_messages.each do |prev_msg|
-        # Ensure content is not nil
-        prev_msg.content = prev_msg.content.to_s
+        if prev_msg.message_type == 'incoming'
+          # Process incoming messages to remove any quoted text
+          original_content = prev_msg.content.to_s
+          Rails.logger.debug { "Processing incoming message: #{original_content[0..100]}..." }
+
+          # Apply cleaning only to incoming messages
+          # Step 1: Remove lines starting with '>' (quoted text)
+          clean_content = original_content.gsub(/^>.*$/m, '')
+
+          # Step 2: Remove "On ... wrote:" patterns and everything after
+          on_wrote_match = clean_content.match(/On\s+.*wrote:/m)
+          clean_content = clean_content[0...on_wrote_match.begin(0)] if on_wrote_match
+
+          # Step 3: Also check for the pattern "Hi, I got it. On Wed, 19 Mar 2025..."
+          period_match = clean_content.match(/(.+?)\.\s+On\s+/m)
+          clean_content = period_match[1] + '.' if period_match
+
+          # Step 4: Remove any HTML blockquotes and Gmail quote divs
+          clean_content = clean_content.gsub(%r{<blockquote.*?</blockquote>}m, '')
+          clean_content = clean_content.gsub(%r{<div class="gmail_quote".*?</div>}m, '')
+
+          # Clean up the result
+          clean_content = clean_content.strip
+
+          # Update the message content, but only if cleaning produced something
+          if clean_content.present?
+            prev_msg.content = clean_content
+            Rails.logger.debug { "Cleaned incoming message: #{clean_content}" }
+          end
+        end
 
         # Truncate very long messages to prevent email delivery issues
         prev_msg.content = prev_msg.content[0..9997] + '...' if prev_msg.content.length > 10_000
       end
     end
+
+    # Always extract original email headers for proper reply-all functionality
+    @original_email_headers = extract_email_headers_from_previous_message
 
     reply_mail_object = prepare_mail(true)
 
@@ -86,6 +122,21 @@ class ConversationReplyMailer < ApplicationMailer
   end
 
   private
+
+  def extract_email_headers_from_previous_message
+    # Try to extract email headers from the last incoming message for reply-all support
+    last_incoming = @conversation.messages.incoming.last
+    return {} unless last_incoming&.content_attributes&.dig(:email).present?
+
+    email_attrs = last_incoming.content_attributes[:email] || {}
+    {
+      from: email_attrs[:from],
+      to: email_attrs[:to],
+      cc: email_attrs[:cc],
+      message_id: email_attrs[:message_id],
+      in_reply_to: email_attrs[:in_reply_to]
+    }
+  end
 
   def init_conversation_attributes(conversation)
     @conversation = conversation
@@ -189,6 +240,13 @@ class ConversationReplyMailer < ApplicationMailer
   end
 
   def in_reply_to_email
+    # First check if we have an original email to reply to from the incoming message
+    if @original_email_headers && @original_email_headers[:message_id].present?
+      message_id = @original_email_headers[:message_id]
+      return message_id.start_with?('<') && message_id.end_with?('>') ? message_id : "<#{message_id}>"
+    end
+
+    # Fall back to conversation_reply_email_id
     conversation_reply_email_id || "<account/#{@account.id}/conversation/#{@conversation.uuid}@#{channel_email_domain}>"
   end
 
@@ -213,21 +271,49 @@ class ConversationReplyMailer < ApplicationMailer
   end
 
   def cc_bcc_emails
-    content_attributes = @conversation.messages.outgoing.last&.content_attributes
+    # First try to get CC/BCC from current message's content attributes
+    content_attributes = current_message&.content_attributes
 
-    return [] unless content_attributes
-    return [] unless content_attributes[:cc_emails] || content_attributes[:bcc_emails]
+    if content_attributes && (content_attributes[:cc_emails] || content_attributes[:bcc_emails])
+      return [content_attributes[:cc_emails], content_attributes[:bcc_emails]]
+    end
 
-    [content_attributes[:cc_emails], content_attributes[:bcc_emails]]
+    # If no CC/BCC in current message, try to get from original email headers for reply-all
+    if @original_email_headers && @original_email_headers[:cc].present?
+      # For reply-all, use original CC recipients except our own addresses
+      our_addresses = [@channel.email, @inbox.email_address, @account.support_email].compact
+      cc_emails = @original_email_headers[:cc].reject { |email| our_addresses.include?(email) }
+      return [cc_emails, []]
+    end
+
+    # No CC/BCC found
+    [[], []]
   end
 
   def to_emails_from_content_attributes
-    content_attributes = @conversation.messages.outgoing.last&.content_attributes
+    # First check content attributes
+    content_attributes = current_message&.content_attributes
 
-    return [] unless content_attributes
-    return [] unless content_attributes[:to_emails]
+    return content_attributes[:to_emails] if content_attributes && content_attributes[:to_emails].present?
 
-    content_attributes[:to_emails]
+    # For reply-all, combine original recipient and sender (except our own address)
+    if @original_email_headers
+      recipients = []
+
+      # Add the original sender (the person we're replying to) first
+      recipients += @original_email_headers[:from] if @original_email_headers[:from].present?
+
+      # Add original TO recipients (except our own addresses and the contact email)
+      if @original_email_headers[:to].present?
+        our_addresses = [@channel.email, @inbox.email_address, @account.support_email, @contact&.email].compact
+        recipients += @original_email_headers[:to].reject { |email| our_addresses.include?(email) }
+      end
+
+      return recipients.uniq if recipients.present?
+    end
+
+    # No recipients found in content attributes or original headers
+    []
   end
 
   def to_emails

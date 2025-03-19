@@ -19,9 +19,9 @@
       <div class="gmail_attr">
         <% first_message = @previous_messages.first %>
         <% sender_name = first_message.sender&.try(:available_name) || first_message.sender&.name || 'Unknown' %>
-        <% channel_email = @channel.try(:email) || @inbox.email_address || @account.support_email %>
+        <% sender_email = get_sender_email(first_message) %>
         <% message_date = first_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
-        On <%= message_date %>, <%= sender_name %> &lt;<%= channel_email %>&gt; wrote:<br>
+        On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:<br>
       </div>
       <blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
         <%= first_message.content %>
@@ -34,8 +34,9 @@
         <% @previous_messages.drop(1).each do |prev_message| %>
           <div class="gmail_attr">
             <% sender_name = prev_message.sender&.try(:available_name) || prev_message.sender&.name || 'Unknown' %>
+            <% sender_email = get_sender_email(prev_message) %>
             <% message_date = prev_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
-            <br>On <%= message_date %>, <%= sender_name %> &lt;<%= channel_email %>&gt; wrote:<br>
+            <br>On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:<br>
           </div>
           <blockquote class="gmail_quote" style="margin:0 0 0 .8ex;border-left:1px #ccc solid;padding-left:1ex">
             <%= prev_message.content %>
