@@ -164,25 +164,58 @@ module ConversationReplyMailerHelper
   # Build the References header for proper email threading
   # This should include all previous message IDs in the conversation
   def references_email
-    # Start with the conversation reference ID
-    refs = ["<account/#{@account.id}/conversation/#{@conversation.uuid}@#{channel_email_domain}>"]
+    # Collect all message IDs in chronological order (oldest first)
+    all_message_ids = []
 
-    # Add the in-reply-to ID if it exists and is not already in the references
-    in_reply_to = in_reply_to_email
-    refs << in_reply_to if in_reply_to.present? && !refs.include?(in_reply_to)
-
-    # Add message IDs from previous messages in the conversation
-    # Get the last 5 messages with source_id to avoid making the header too long
-    @conversation.messages.where.not(source_id: nil).order(created_at: :desc).limit(5).each do |msg|
+    # Get all messages in this conversation with source_id (which would be their Message-ID)
+    # Order by created_at ASC to get oldest messages first
+    @conversation.messages.where.not(source_id: nil).order(created_at: :asc).each do |msg|
       source_id = msg.source_id
       # Ensure the source_id is properly formatted with angle brackets
       msg_id = source_id.start_with?('<') && source_id.end_with?('>') ? source_id : "<#{source_id}>"
-      refs << msg_id unless refs.include?(msg_id)
+      all_message_ids << msg_id unless all_message_ids.include?(msg_id)
     end
 
-    # Format the references according to RFC 5322
-    # Each reference should be on a new line with proper indentation for better readability
-    # and to avoid issues with long headers
-    refs.join("\n ")
+    # Also check in content_attributes.email.message_id for messages that might have this set
+    # This is crucial for including external messages that were received but don't have source_id
+    @conversation.messages.each do |msg|
+      next unless msg.content_attributes && msg.content_attributes['email'] && msg.content_attributes['email']['message_id'].present?
+
+      message_id = msg.content_attributes['email']['message_id']
+      msg_id = message_id.start_with?('<') && message_id.end_with?('>') ? message_id : "<#{message_id}>"
+      all_message_ids << msg_id unless all_message_ids.include?(msg_id)
+    end
+
+    # Also check in content_attributes.email.in_reply_to for references we should include
+    # This helps preserve threading when replying to external messages
+    @conversation.messages.each do |msg|
+      next unless msg.content_attributes && msg.content_attributes['email'] && msg.content_attributes['email']['in_reply_to'].present?
+
+      in_reply_to = msg.content_attributes['email']['in_reply_to']
+      reply_id = in_reply_to.start_with?('<') && in_reply_to.end_with?('>') ? in_reply_to : "<#{in_reply_to}>"
+      all_message_ids << reply_id unless all_message_ids.include?(reply_id)
+    end
+
+    # Include original message headers from current message being processed
+    if @original_email_headers && @original_email_headers[:message_id].present?
+      message_id = @original_email_headers[:message_id]
+      msg_id = message_id.start_with?('<') && message_id.end_with?('>') ? message_id : "<#{message_id}>"
+      all_message_ids << msg_id unless all_message_ids.include?(msg_id)
+    end
+
+    # Include the conversation reference as well for additional context
+    conversation_ref = "<account/#{@account.id}/conversation/#{@conversation.uuid}@#{channel_email_domain}>"
+    all_message_ids << conversation_ref unless all_message_ids.include?(conversation_ref)
+
+    # If for some reason we have no message IDs, at least include the conversation reference
+    all_message_ids << conversation_ref if all_message_ids.empty?
+
+    # Finally, include in_reply_to of the current message
+    in_reply_to = in_reply_to_email
+    all_message_ids << in_reply_to if in_reply_to.present? && !all_message_ids.include?(in_reply_to)
+
+    # The References header should join all IDs with spaces
+    # Some clients format with newlines, but a simple space-separated list is most standard
+    all_message_ids.join(' ')
   end
 end
