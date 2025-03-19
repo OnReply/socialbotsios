@@ -49,7 +49,7 @@ class ConversationReplyMailer < ApplicationMailer
                                         .where.not(id: @message.id)
                                         .where(message_type: [:incoming, :outgoing])
                                         .order(created_at: :desc)
-                                        .limit(10) # Keep this at 5 for reliable email delivery
+                                        .limit(10) # Keep this at 10 for reliable email delivery
 
       Rails.logger.debug { "Added #{@previous_messages.size} previous messages to the email history" }
 
