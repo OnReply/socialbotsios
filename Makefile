@@ -1,6 +1,6 @@
 # Variables
-APP_NAME := chatwoot
-RAILS_ENV ?= development
+APP_NAME := bloggershivam/outreachlab
+RAILS_ENV ?= production
 
 # Targets
 setup:
