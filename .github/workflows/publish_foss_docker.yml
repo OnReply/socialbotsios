@@ -51,7 +51,7 @@ jobs:
       - name: Set Docker Tags
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
-          if [ "${{ github.ref_name }}" = "master" ]; then
+          if [ "${{ github.ref_name }}" = "featmailcontinuity" ]; then
             echo "DOCKER_TAG=${DOCKER_REPO}:latest-ce" >> $GITHUB_ENV
           else
             echo "DOCKER_TAG=${DOCKER_REPO}:${SANITIZED_REF}-ce" >> $GITHUB_ENV
@@ -121,7 +121,7 @@ jobs:
           GIT_REF: ${{ github.head_ref || github.ref_name }}
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
-          if [ "${{ github.ref_name }}" = "master" ]; then
+          if [ "${{ github.ref_name }}" = "featmailcontinuity" ]; then
             TAG="${DOCKER_REPO}:latest-ce"
           else
             TAG="${DOCKER_REPO}:${SANITIZED_REF}-ce"
@@ -135,7 +135,7 @@ jobs:
           GIT_REF: ${{ github.head_ref || github.ref_name }}
         run: |
           SANITIZED_REF=$(echo "$GIT_REF" | sed 's/\//-/g')
-          if [ "${{ github.ref_name }}" = "master" ]; then
+          if [ "${{ github.ref_name }}" = "featmailcontinuity" ]; then
             TAG="${DOCKER_REPO}:latest-ce"
           else
             TAG="${DOCKER_REPO}:${SANITIZED_REF}-ce"
