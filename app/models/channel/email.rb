@@ -5,6 +5,9 @@
 #  id                        :bigint           not null, primary key
 #  email                     :string           not null
 #  forward_to_email          :string           not null
+#  history_fetched           :boolean          default(FALSE)
+#  history_fetched_at        :datetime
+#  history_fetched_days      :integer
 #  imap_address              :string           default("")
 #  imap_enable_ssl           :boolean          default(TRUE)
 #  imap_enabled              :boolean          default(FALSE)
@@ -48,6 +51,7 @@ class Channel::Email < ApplicationRecord
   validates :forward_to_email, uniqueness: true
 
   before_validation :ensure_forward_to_email, on: :create
+  after_create :queue_history_fetch, if: :should_fetch_history?
 
   def name
     'Email'
@@ -65,9 +69,30 @@ class Channel::Email < ApplicationRecord
     imap_enabled && imap_address == 'imap.gmail.com'
   end
 
+  def history_fetched?
+    history_fetched
+  end
+
   private
 
   def ensure_forward_to_email
     self.forward_to_email ||= "#{SecureRandom.hex}@#{account.inbound_email_domain}"
+  end
+
+  def should_fetch_history?
+    # Only fetch history for IMAP enabled channels
+    # Note: This can be customized based on your requirements
+    # For example, you might only want to fetch history for Gmail
+    imap_enabled?
+  end
+
+  def queue_history_fetch
+    # Get the setting for auto-fetching history
+    auto_fetch = ENV['AUTO_FETCH_EMAIL_HISTORY']&.downcase == 'true'
+
+    # If auto-fetch is enabled, queue the history fetch job
+    return unless auto_fetch
+
+    Inboxes::QueueHistoryFetchForNewInboxJob.perform_later(id)
   end
 end
