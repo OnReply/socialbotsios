@@ -4,8 +4,8 @@ module Inboxes
   class FetchImapEmailInboxesHistoryJob < MutexApplicationJob
     queue_as :scheduled_jobs
 
-    # Default number of days to fetch (2 years)
-    DEFAULT_DAYS = 730
+    # Default number of days to fetch (2 years), can be overridden by ENV variable
+    DEFAULT_DAYS = ENV.fetch('FETCH_IMAP_EMAILS_DAYS', 730).to_i
 
     # Maximum emails to fetch in a single run to avoid rate limits
     # Adjust as needed based on your server capacity and API limits
