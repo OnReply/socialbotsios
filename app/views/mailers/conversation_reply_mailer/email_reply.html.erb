@@ -21,9 +21,9 @@
     <div style="color: #666; font-style: italic;">
       <% first_message = @previous_messages.first %>
       <% sender_name = first_message.sender&.try(:available_name) || first_message.sender&.name || 'Unknown' %>
-      <% sender_email = get_sender_email(first_message) %>
+      <% channel_email = @conversation.inbox.channel.try(:email) || @conversation.inbox.email_address || @conversation.account.support_email %>
       <% message_date = first_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
-      On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:
+      On <%= message_date %>, <%= sender_name %> &lt;<%= channel_email %>&gt; wrote:
     </div>
     <br>
     <%= first_message.content %>
@@ -37,9 +37,8 @@
       <div style="margin-left: 20px;">
         <div style="color: #666; font-style: italic;">
           <% sender_name = prev_message.sender&.try(:available_name) || prev_message.sender&.name || 'Unknown' %>
-          <% sender_email = get_sender_email(prev_message) %>
           <% message_date = prev_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
-          On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:
+          On <%= message_date %>, <%= sender_name %> &lt;<%= channel_email %>&gt; wrote:
         </div>
         <br>
         <%= prev_message.content %>
