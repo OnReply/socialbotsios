@@ -35,6 +35,20 @@ module Inboxes
         Rails.logger.error "[IMAP::HISTORY] Error fetching history for #{channel.email}: #{e.message}"
         raise e
       end
+
+      # After successful fetch, mark conversations as resolved
+      channel = Channel::Email.find(channel_id)
+      conversations_to_update = channel.inbox.conversations
+                                     .where('created_at > ?', days_to_fetch.days.ago)
+      
+      Rails.logger.info "[IMAP::HISTORY] Found #{conversations_to_update.count} conversations to update for #{channel.email}"
+      
+      if conversations_to_update.exists?
+        updated_count = conversations_to_update.update_all(status: :resolved)
+        Rails.logger.info "[IMAP::HISTORY] Successfully updated #{updated_count} conversations to resolved status for #{channel.email}"
+      else
+        Rails.logger.info "[IMAP::HISTORY] No conversations found to update for #{channel.email}"
+      end
     end
 
     private
