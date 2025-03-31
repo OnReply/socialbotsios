@@ -36,6 +36,17 @@ class OauthCallbackController < ApplicationController
     # reauthorized will also update cache keys for the associated inbox
     channel_email.reauthorized!
 
+    # Trigger history fetch for new channels and mark conversations as resolved
+    if !channel_exists && channel_email.imap_enabled?
+      Rails.logger.info "[OAUTH] Triggering history fetch for new channel: #{channel_email.email}"
+      # Queue the history fetch job with auto-resolve flag
+      Inboxes::FetchImapEmailInboxesHistoryJob.perform_later(channel_email.id)
+
+      # Mark all conversations in this inbox as resolved
+      channel_email.inbox.conversations.update_all(status: :resolved)
+      Rails.logger.info "[OAUTH] Marked all conversations as resolved for channel: #{channel_email.email}"
+    end
+
     [channel_email.inbox, channel_exists]
   end
 
