@@ -60,17 +60,20 @@ module Inboxes
 
         if conversations_to_update.exists?
           # Process conversations in batches of 50
-          conversations_to_update.in_batches(of: 50) do |batch|
+          conversations_to_update.in_batches(of: 50).with_index do |batch, index|
             # Schedule each batch to be processed after 1 minute
-            ResolveHistoricalConversationsBatchJob.set(wait: 1.minute).perform_later(batch.pluck(:id))
+            batch_ids = batch.pluck(:id)
+            Rails.logger.info "[IMAP::HISTORY] Scheduling batch #{index + 1} with #{batch_ids.size} conversations to be resolved in 1 minute"
+            ResolveHistoricalConversationsBatchJob.set(wait: 1.minute).perform_later(batch_ids)
           end
 
-          Rails.logger.info "[IMAP::HISTORY] Scheduled resolution for #{conversations_to_update.count} conversations in batches for #{channel.email}"
+          Rails.logger.info "[IMAP::HISTORY] Successfully scheduled all resolution jobs for #{conversations_to_update.count} conversations"
         else
           Rails.logger.info "[IMAP::HISTORY] No conversations found to update for #{channel.email}"
         end
       rescue StandardError => e
         Rails.logger.error "[IMAP::HISTORY] Error scheduling conversation resolution: #{e.message}"
+        Rails.logger.error e.backtrace.join("\n")
         # Don't raise this error as the main job is complete
       end
     end
