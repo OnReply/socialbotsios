@@ -33,21 +33,45 @@ module Inboxes
         end
       rescue StandardError => e
         Rails.logger.error "[IMAP::HISTORY] Error fetching history for #{channel.email}: #{e.message}"
-        raise e
+        Rails.logger.error e.backtrace.join("\n")
+        # Don't raise the error, we want to continue with marking history as fetched
       end
 
-      # After successful fetch, mark conversations as resolved
-      channel = Channel::Email.find(channel_id)
-      conversations_to_update = channel.inbox.conversations
-                                     .where('created_at > ?', days_to_fetch.days.ago)
-      
-      Rails.logger.info "[IMAP::HISTORY] Found #{conversations_to_update.count} conversations to update for #{channel.email}"
-      
-      if conversations_to_update.exists?
-        updated_count = conversations_to_update.update_all(status: :resolved)
-        Rails.logger.info "[IMAP::HISTORY] Successfully updated #{updated_count} conversations to resolved status for #{channel.email}"
-      else
-        Rails.logger.info "[IMAP::HISTORY] No conversations found to update for #{channel.email}"
+      # After successful fetch or error, ensure we mark history as fetched
+      begin
+        channel = Channel::Email.find(channel_id)
+        mark_history_fetched(channel, days_to_fetch)
+        Rails.logger.info "[IMAP::HISTORY] Successfully marked history as fetched for #{channel.email}"
+      rescue StandardError => e
+        Rails.logger.error "[IMAP::HISTORY] Error marking history as fetched: #{e.message}"
+        raise e # Re-raise this error as it's critical
+      end
+
+      # After successful fetch, schedule resolution of conversations
+      begin
+        channel = Channel::Email.find(channel_id)
+        conversations_to_update = channel.inbox.conversations
+                                         .where('created_at > ?', days_to_fetch.days.ago)
+                                         .where.not(status: :resolved) # Only update non-resolved conversations
+                                         .order(created_at: :desc)     # Get most recent first
+                                         .limit(300)                   # Limit to last 300 emails
+
+        Rails.logger.info "[IMAP::HISTORY] Found #{conversations_to_update.count} conversations to update for #{channel.email}"
+
+        if conversations_to_update.exists?
+          # Process conversations in batches of 50
+          conversations_to_update.in_batches(of: 50) do |batch|
+            # Schedule each batch to be processed after 1 minute
+            ResolveHistoricalConversationsBatchJob.set(wait: 1.minute).perform_later(batch.pluck(:id))
+          end
+
+          Rails.logger.info "[IMAP::HISTORY] Scheduled resolution for #{conversations_to_update.count} conversations in batches for #{channel.email}"
+        else
+          Rails.logger.info "[IMAP::HISTORY] No conversations found to update for #{channel.email}"
+        end
+      rescue StandardError => e
+        Rails.logger.error "[IMAP::HISTORY] Error scheduling conversation resolution: #{e.message}"
+        # Don't raise this error as the main job is complete
       end
     end
 
@@ -102,12 +126,16 @@ module Inboxes
 
       Rails.logger.info "[IMAP::HISTORY] Processing #{total_emails} emails in #{total_batches} batches"
 
+      processed_count = 0
       # Process in batches to avoid rate limits
       seq_nums.each_slice(MAX_EMAILS_PER_BATCH).with_index do |batch, batch_index|
         Rails.logger.info "[IMAP::HISTORY] Processing batch #{batch_index + 1}/#{total_batches} (#{batch.size} emails)"
 
         # Process this batch
         process_batch(channel, imap_client, batch)
+        processed_count += batch.size
+
+        Rails.logger.info "[IMAP::HISTORY] Processed #{processed_count}/#{total_emails} emails so far"
 
         # Sleep between batches to avoid overwhelming the server
         if batch_index < total_batches - 1
@@ -115,6 +143,8 @@ module Inboxes
           sleep(BATCH_DELAY) unless Rails.env.test?
         end
       end
+
+      Rails.logger.info "[IMAP::HISTORY] Completed processing all #{processed_count} emails"
     end
 
     def process_batch(channel, imap_client, seq_nums)
