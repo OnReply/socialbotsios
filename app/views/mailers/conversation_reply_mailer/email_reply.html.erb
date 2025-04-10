@@ -21,7 +21,7 @@
     <div style="color: #666; font-style: italic;">
       <% first_message = @previous_messages.first %>
       <% sender_name = first_message.sender&.try(:available_name) || first_message.sender&.name || 'Unknown' %>
-      <% sender_email = first_message.content_attributes&.dig(:email, :from)&.first || first_message.sender&.email || get_sender_email(first_message) %>
+      <% sender_email = first_message.message_type == 'outgoing' ? @conversation.inbox.channel.email : (first_message.content_attributes&.dig(:email, :from)&.first || first_message.sender&.email || get_sender_email(first_message)) %>
       <% message_date = first_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
       On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:
     </div>
@@ -37,7 +37,7 @@
       <div style="margin-left: 20px;">
         <div style="color: #666; font-style: italic;">
           <% sender_name = prev_message.sender&.try(:available_name) || prev_message.sender&.name || 'Unknown' %>
-          <% sender_email = prev_message.content_attributes&.dig(:email, :from)&.first || prev_message.sender&.email || get_sender_email(prev_message) %>
+          <% sender_email = prev_message.message_type == 'outgoing' ? @conversation.inbox.channel.email : (prev_message.content_attributes&.dig(:email, :from)&.first || prev_message.sender&.email || get_sender_email(prev_message)) %>
           <% message_date = prev_message.created_at.strftime("%a, %b %-d, %Y at %-l:%M %p") %>
           On <%= message_date %>, <%= sender_name %> &lt;<%= sender_email %>&gt; wrote:
         </div>
