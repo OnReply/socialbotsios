@@ -44,12 +44,23 @@ class ConversationReplyMailer < ApplicationMailer
 
     # Set up email history for email channels, but only if the message doesn't already have quotes
     if @inbox.inbox_type == 'Email' && !has_existing_history
-      # Get previous messages in reverse chronological order (most recent first)
+      # Get the last 10 messages in chronological order (oldest first)
+      # First, get the total count of messages
+      total_messages = @conversation.messages.chat
+                                    .where.not(id: @message.id)
+                                    .where(message_type: [:incoming, :outgoing])
+                                    .count
+
+      # Calculate the offset to get the last 10 messages
+      offset = [total_messages - 10, 0].max
+
+      # Fetch the last 10 messages in chronological order
       @previous_messages = @conversation.messages.chat
                                         .where.not(id: @message.id)
                                         .where(message_type: [:incoming, :outgoing])
-                                        .order(created_at: :desc)
-                                        .limit(10) # Keep this at 10 for reliable email delivery
+                                        .order(created_at: :asc)
+                                        .offset(offset)
+                                        .limit(10)
 
       Rails.logger.debug { "Added #{@previous_messages.size} previous messages to the email history" }
 
